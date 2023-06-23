@@ -3,9 +3,8 @@ mod byte_array_info;
 
 use byte_array_info::ByteArrayInfo;
 
-
 /**
- * Returns (data type, data dimension, buffer index, byte offset,byte length, option of byte stride) of position buffers
+ * Returns a Vec<ByteArrayInfo> of position data
  */
 pub fn find_position_buffer_data(document: &gltf::Document) -> Vec<ByteArrayInfo> { 
     document.meshes().map(|mesh| {
