@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 gltf = {version="1.2", features = ["extras","names"]}
+nalgebra = "*"
+
