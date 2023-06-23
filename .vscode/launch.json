@@ -1,0 +1,82 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'models-cv'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "models-cv",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'load_gltf'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=load_gltf",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "load_gltf",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'load_positions'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=load_positions",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "load_positions",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'load_gltf'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=load_gltf",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "load_gltf",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
