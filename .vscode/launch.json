@@ -80,6 +80,24 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "Debug example 'project_points'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=project_points",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "project_points",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "Debug unit tests in example 'load_gltf'",
             "cargo": {
                 "args": [
