@@ -80,7 +80,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'project_points'",
+            "name": "Debug example 'project_points Suzanne'",
             "cargo": {
                 "args": [
                     "build",
@@ -93,6 +93,24 @@
                 }
             },
             "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'project_points Cube'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=project_points",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "project_points",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Cube/glTF/Cube.gltf"],
             "cwd": "${workspaceFolder}"
         },
         {

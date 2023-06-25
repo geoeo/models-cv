@@ -3,4 +3,4 @@ Crate for loading gltf files and projecting the verticies using camera models. U
 
 
 ### Suzanne
-![suzanne](doc/test_suzanne.png)
+![suzanne](doc/test_suzanne_triangle_filtered.png)

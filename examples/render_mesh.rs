@@ -66,7 +66,7 @@ fn render_points(points: &Vec<Vec<Vector3<f32>>>) -> () {
         window.draw_text(
             &format!(
                 "Cam Loot At: {}\nCam Pos: {}",
-                arc_ball.eye(), arc_ball.at()
+                arc_ball.at(), arc_ball.eye()
             ),
             &Point2::new(0.0, 20.0),
             40.0,

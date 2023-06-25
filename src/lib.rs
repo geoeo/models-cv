@@ -1,16 +1,17 @@
 extern crate gltf;
 extern crate nalgebra as na;
 extern crate png;
-mod byte_array_info;
 
-use std::collections::HashMap;
+mod byte_array_info;
+pub mod filter;
+
 use std::path::Path;
 use std::fs::File;
 use std::io::BufWriter;
 use std::result::Result;
 
 use byte_array_info::ByteArrayInfo;
-use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4};
+use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX};
 use png::EncodingError;
 
 /**
@@ -60,38 +61,20 @@ pub fn convert_byte_data_to_vec3(position_byte_data: Vec<&[u8]>) -> Vec<Vec<Vect
     }).collect()
 }
 
-pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>, screen_width: f32, screen_height: f32) -> Vec<(Vector2<usize>,f32)> {
-    let projection_matrix = intrinsic_matrix*view_matrix;
+pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>, screen_width: f32, screen_height: f32) -> (Vec<(Vector2<usize>,f32)>, Matrix3xX<f32>) {
     let mut ps = Matrix4xX::<f32>::from_element(points.len(), 1.0);
     for i in 0..points.len() {
         ps.fixed_view_mut::<3,1>(0,i).copy_from(&points[i]);
     }
-    let projected_points = projection_matrix*ps;
-    projected_points.column_iter()
-    .filter(|c| c[2] != 0.0)
-    .map(|c| (c[0]/c[2],c[1]/c[2], c[2]))
-    .filter(|&(x,y,_)| 0.0 <= x && 0.0 <= y && x < screen_width && y < screen_height)
-    .map(|(x,y,z)| (Vector2::new(x.floor() as usize, y.floor() as usize),z))
-    .collect::<Vec<_>>()
-}
-
-pub fn filter_visible_screen_points(screen_points_with_depth: &Vec<(Vector2<usize>,f32)>) -> Vec<Vector2<usize>> {
-    let mut closest_point_map = HashMap::<(usize,usize), usize>::with_capacity(screen_points_with_depth.len());
-    for (i,(screen_p,depth)) in screen_points_with_depth.iter().enumerate() {
-        let key = (screen_p.x,screen_p.y);
-        match closest_point_map.contains_key(&key) {
-            true => {
-                let current_point_index = closest_point_map.get(&key).unwrap();
-                let current_point_depth = screen_points_with_depth[*current_point_index].1;
-                // GLTF models are displayed along the negative Z-Axis
-                if *depth > current_point_depth {
-                    closest_point_map.insert(key, i);
-                }
-            },
-            false => {closest_point_map.insert(key, i);()}
-        }
-    }
-    closest_point_map.into_values().map(|i| screen_points_with_depth[i].0).collect()
+    let points_cam = view_matrix*ps;
+    let projected_points = intrinsic_matrix*&points_cam;
+    let screen_points = projected_points.column_iter()
+        .filter(|c| c[2] != 0.0)
+        .map(|c| (c[0]/c[2],c[1]/c[2], c[2]))
+        .filter(|&(x,y,_)| 0.0 <= x && 0.0 <= y && x < screen_width && y < screen_height)
+        .map(|(x,y,z)| (Vector2::new(x.floor() as usize, y.floor() as usize),z))
+        .collect::<Vec<_>>();
+    (screen_points, points_cam)
 }
 
 pub fn calculate_rgb_byte_vec(screen_points: &Vec<Vector2<usize>>, screen_width: usize, screen_height: usize) -> Vec<u8> {
@@ -109,7 +92,6 @@ pub fn calculate_rgb_byte_vec(screen_points: &Vec<Vector2<usize>>, screen_width:
 
     dat_vec
 }
-
 
 pub fn write_data_to_file(path_str: &str, data_vec: &Vec<u8>, screen_width: u32, screen_height: u32) -> Result<(),EncodingError> {
     let path = Path::new(path_str);

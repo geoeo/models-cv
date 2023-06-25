@@ -43,8 +43,9 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
         0.0,f,cy,
         0.0,0.0,1.0);
     
-    let screen_points_with_depth = models_cv::project_points(points, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned(),screen_width, screen_height);
-    let visible_screen_points = models_cv::filter_visible_screen_points(&screen_points_with_depth);
+    let (screen_points_with_depth, points_cam) = models_cv::project_points(points, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned(),screen_width, screen_height);
+    //let visible_screen_points = models_cv::filter::filter_visible_screen_points_by_depth(&screen_points_with_depth);
+    let visible_screen_points = models_cv::filter::filter_visible_screen_points_by_triangle_intersection(&screen_points_with_depth,&points_cam,&intrinsic_matrix);
     let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
     models_cv::write_data_to_file("/home/marc/Workspace/Rust/models-cv/output/test_suzanne.png", &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
 
