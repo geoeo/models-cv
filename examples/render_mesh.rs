@@ -33,7 +33,7 @@ fn render_points(points: &Vec<Vec<Vector3<f32>>>) -> () {
 
     let mut window = Window::new("Gltf Model");
     let mut scene_center = Vector3::<f32>::new(0.0, 0.0, 0.0);
-    println!("WARN: Assuming Triangle Mode for now!");
+    println!("WARN: Assuming Triangle Mode for now with no indices defined!");
 
     for vertices in points {
         let vertices_kiss3d = vertices.into_iter().map(|v| {
@@ -44,7 +44,7 @@ fn render_points(points: &Vec<Vec<Vector3<f32>>>) -> () {
         }).collect::<Vec<_>>();
 
 
-        let indices = (0..vertices_kiss3d.len()).step_by(3).map(|i| i as u16).map(|i| Point3::new(i,i+1,i+2)).collect::<Vec<_>>();
+        let indices = (0..vertices_kiss3d.len()-2).step_by(3).map(|i| i as u16).map(|i| Point3::new(i,i+1,i+2)).collect::<Vec<_>>();
         let mesh = Rc::new(RefCell::new(Mesh::new(
             vertices_kiss3d, indices, None, None, false,
         )));
