@@ -35,7 +35,7 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
     let view_matrix = Isometry3::look_at_rh(&eye, &at, &Vector3::y_axis()).to_matrix();
     let screen_width = 640.0;
     let screen_height = 480.0;
-    let f = 1000.0;
+    let f = 1000.0; 
     let cx = screen_width/2.0;
     let cy = screen_height/2.0;
     let intrinsic_matrix = Matrix3::<f32>::new(
@@ -43,9 +43,10 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
         0.0,f,cy,
         0.0,0.0,1.0);
     
-    let screen_points_with_depth = models_cv::project_points(points, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned());
+    let screen_points_with_depth = models_cv::project_points(points, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned(),screen_width, screen_height);
     let visible_screen_points = models_cv::filter_visible_screen_points(&screen_points_with_depth);
-
+    let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
+    models_cv::write_data_to_file("/home/marc/Workspace/Rust/models-cv/output/test_suzanne.png", &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
 
 
 }
