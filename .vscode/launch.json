@@ -113,6 +113,25 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'render_mesh'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=render_mesh",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "render_mesh",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
