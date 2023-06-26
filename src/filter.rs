@@ -60,12 +60,13 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
     std_y = (std_y/(ncols_f32-1.0)).sqrt();
     std_z = (std_z/(ncols_f32-1.0)).sqrt();
 
-    let avg_std = (std_x+std_y+std_z)/3.0;
-    let l2_eps = match avg_std {
-        v if (v-1.0).abs() < STD_EPS => 1.0,
-        v if (v-0.5).abs() < STD_EPS => 1.0e-2,
-        _ => panic!("TODO:Need to rescale meshes to have a standard intersection error")
-    };
+    let std_x_pix = std_x as f64/fx*(2.0f64*cx);
+    let std_y_pix = std_y as f64/fy*(2.0f64*cy);
+    let std_xy_avg = (std_x_pix+std_y_pix)/2.0f64;
+    let exp = ((0.5-std_xy_avg).abs()*10.0).floor();
+
+    //TODO: Implement depth buffering for a better result than a heuristic
+    let l2_eps = 10.0f64.powf(-exp);
 
     let sub_pix_res = 10;
     let triangles = (0..points_cam.ncols()-2).step_by(3).map(|i| (points_cam.column(i).into_owned(),points_cam.column(i+1).into_owned(),points_cam.column(i+2).into_owned())).collect::<Vec<(_,_,_)>>();
@@ -98,8 +99,6 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
                 }
             }
         }).any(|b| b)
-
-
     }).map(|&(u,v)| Vector2::<usize>::new(u,v)).collect::<Vec<_>>()
 }
 

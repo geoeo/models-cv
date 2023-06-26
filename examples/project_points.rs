@@ -30,8 +30,8 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    //let eye = Point3::new(0.0,0.0,-5.0);
-    let eye = Point3::new(-2.0,0.0,4.5);
+    let eye = Point3::new(0.0,0.0,-5.0);
+    //let eye = Point3::new(-2.0,0.0,4.5);
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let view_matrix = Isometry3::look_at_rh(&eye, &at, &Vector3::y_axis()).to_matrix();
     let screen_width = 640.0;
