@@ -3,7 +3,6 @@ extern crate nalgebra as na;
 use na::{Vector2, Vector3, Matrix3xX, Matrix3};
 use std::collections::{HashMap,HashSet};
 
-const STD_EPS: f32 = 1e-1; 
 const BARY_EPS: f64 = 1e-12;
 const DET_EPS: f64 = 1e-8;
 
