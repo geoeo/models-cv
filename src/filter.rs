@@ -7,27 +7,29 @@ const L2_EPS: f32 = 5e-3; //TODO: This factor depends strongly on the mesh verte
 const BARY_EPS: f32 = 1e-8; 
 const DET_EPS: f32 = 1e-8;
 
-pub fn filter_visible_screen_points_by_depth(screen_points_with_depth: &Vec<(Vector2<usize>,f32)>) -> Vec<Vector2<usize>> {
-    let mut closest_point_map = HashMap::<(usize,usize), usize>::with_capacity(screen_points_with_depth.len());
-    for (i,(screen_p,depth)) in screen_points_with_depth.iter().enumerate() {
+pub fn filter_visible_screen_points_by_depth(points_screen: &Vec<Vector2<usize>>, points_cam: &Matrix3xX<f32>) -> Vec<Vector2<usize>> {
+    assert_eq!(points_screen.len(),points_cam.ncols());
+    let mut closest_point_map = HashMap::<(usize,usize), usize>::with_capacity(points_screen.len());
+    for (i,screen_p) in points_screen.iter().enumerate() {
         let key = (screen_p.x,screen_p.y);
         match closest_point_map.contains_key(&key) {
             true => {
                 let current_point_index = closest_point_map.get(&key).unwrap();
-                let current_point_depth = screen_points_with_depth[*current_point_index].1;
+                let current_point_depth = points_cam[*current_point_index];
+                let depth = points_cam[(2,i)];
                 // GLTF models are displayed along the negative Z-Axis
-                if *depth > current_point_depth {
+                if depth > current_point_depth {
                     closest_point_map.insert(key, i);
                 }
             },
             false => {closest_point_map.insert(key, i);()}
         }
     }
-    closest_point_map.into_values().map(|i| screen_points_with_depth[i].0).collect()
+    closest_point_map.into_values().map(|i| points_screen[i]).collect()
 }
 
-pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_depth: &Vec<(Vector2<usize>,f32)>, points_cam: &Matrix3xX<f32>, intrinsic_matrix: &Matrix3<f32>) -> Vec<Vector2<usize>> {
-    let screen_point_set = screen_points_with_depth.iter().map(|(v,_)| (v.x,v.y)).collect::<HashSet<(usize,usize)>>();
+pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_depth: &Vec<Vector2<usize>>, points_cam: &Matrix3xX<f32>, intrinsic_matrix: &Matrix3<f32>) -> Vec<Vector2<usize>> {
+    let screen_point_set = screen_points_with_depth.iter().map(|v| (v.x,v.y)).collect::<HashSet<(usize,usize)>>();
     let fx = intrinsic_matrix[(0,0)];
     let fy = intrinsic_matrix[(1,1)];
     let cx = intrinsic_matrix[(0,2)];
@@ -60,6 +62,7 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
     }).map(|&(u,v)| Vector2::<usize>::new(u,v)).collect::<Vec<_>>()
 }
 
+//https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.html
 pub fn ray_triangle_intersection(orig: &Vector3<f32>, dir: &Vector3<f32>, v0: &Vector3<f32>, v1: &Vector3<f32>, v2: &Vector3<f32>) -> Option<f32> {
     let v0v1 = v1 - v0;
     let v0v2 = v2 - v0;

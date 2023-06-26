@@ -61,7 +61,7 @@ pub fn convert_byte_data_to_vec3(position_byte_data: Vec<&[u8]>) -> Vec<Vec<Vect
     }).collect()
 }
 
-pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>, screen_width: f32, screen_height: f32) -> (Vec<(Vector2<usize>,f32)>, Matrix3xX<f32>) {
+pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>, screen_width: f32, screen_height: f32) -> (Vec<Vector2<usize>>, Matrix3xX<f32>) {
     let mut ps = Matrix4xX::<f32>::from_element(points.len(), 1.0);
     for i in 0..points.len() {
         ps.fixed_view_mut::<3,1>(0,i).copy_from(&points[i]);
@@ -70,9 +70,9 @@ pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32
     let projected_points = intrinsic_matrix*&points_cam;
     let screen_points = projected_points.column_iter()
         .filter(|c| c[2] != 0.0)
-        .map(|c| (c[0]/c[2],c[1]/c[2], c[2]))
-        .filter(|&(x,y,_)| 0.0 <= x && 0.0 <= y && x < screen_width && y < screen_height)
-        .map(|(x,y,z)| (Vector2::new(x.floor() as usize, y.floor() as usize),z))
+        .map(|c| (c[0]/c[2],c[1]/c[2]))
+        .filter(|&(x,y)| 0.0 <= x && 0.0 <= y && x < screen_width && y < screen_height)
+        .map(|(x,y)| Vector2::new(x.floor() as usize, y.floor() as usize))
         .collect::<Vec<_>>();
     (screen_points, points_cam)
 }
