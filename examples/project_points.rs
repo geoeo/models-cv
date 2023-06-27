@@ -30,10 +30,13 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    let eye = Point3::new(0.0,0.0,-5.0);
-    //let eye = Point3::new(-2.0,0.0,4.5);
+    let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(0.0,0.0,-5.0)];
+    
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
-    let view_matrix = Isometry3::look_at_rh(&eye, &at, &Vector3::y_axis()).to_matrix();
+    let view_matrices = eyes.iter().map(|eye| {
+        let view_matrix = Isometry3::look_at_rh(&eye, &at, &Vector3::y_axis()).to_matrix();
+        view_matrix.fixed_view::<3,4>(0, 0).into_owned()
+    }).collect::<Vec<_>>();
     let screen_width = 640.0;
     let screen_height = 480.0;
     let f = 1000.0; 
@@ -47,14 +50,16 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
     let visible_screen_points_with_idx 
         = models_cv::filter_screen_points_for_camera_views(
             points,&intrinsic_matrix,
-            &vec![view_matrix.fixed_view::<3,4>(0, 0).into_owned()],
+            &view_matrices,
             screen_width,
             screen_height,
             models_cv::filter::FilterType::TriangleIntersection
         );
-    let visible_screen_points = visible_screen_points_with_idx.first().unwrap().iter().map(|&(_,v)| v).collect::<Vec<_>>();
-    let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
-    models_cv::write_data_to_file("/home/marc/Workspace/Rust/models-cv/output/test_suzanne.png", &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
-
+    for (camera_id, visible_points_for_cam) in visible_screen_points_with_idx.iter().enumerate() {
+        let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();
+        let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
+        let name = format!("/home/marc/Workspace/Rust/models-cv/output/test_suzanne_{}.png",camera_id+1);
+        models_cv::write_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
+    }
 
 }
