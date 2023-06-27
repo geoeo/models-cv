@@ -1,15 +1,20 @@
 extern crate nalgebra as na;
 
 use na::{Vector2, Vector3, Matrix3xX, Matrix3};
-use std::collections::{HashMap,HashSet};
+use std::collections::HashMap;
 
 const BARY_EPS: f64 = 1e-12;
 const DET_EPS: f64 = 1e-8;
 
-pub fn filter_visible_screen_points_by_depth(points_screen: &Vec<Vector2<usize>>, points_cam: &Matrix3xX<f32>) -> Vec<Vector2<usize>> {
-    assert_eq!(points_screen.len(),points_cam.ncols());
-    let mut closest_point_map = HashMap::<(usize,usize), usize>::with_capacity(points_screen.len());
-    for (i,screen_p) in points_screen.iter().enumerate() {
+pub enum FilterType {
+    Depth,
+    TriangleIntersection
+}
+
+pub fn filter_visible_screen_points_by_depth(screen_points_with_index: &Vec<(usize,Vector2<usize>)>, points_cam: &Matrix3xX<f32>) -> Vec<(usize,Vector2<usize>)> {
+    assert_eq!(screen_points_with_index.len(),points_cam.ncols());
+    let mut closest_point_map = HashMap::<(usize,usize), usize>::with_capacity(screen_points_with_index.len());
+    for &(i,screen_p) in screen_points_with_index.iter() {
         let key = (screen_p.x,screen_p.y);
         match closest_point_map.contains_key(&key) {
             true => {
@@ -24,40 +29,35 @@ pub fn filter_visible_screen_points_by_depth(points_screen: &Vec<Vector2<usize>>
             false => {closest_point_map.insert(key, i);()}
         }
     }
-    closest_point_map.into_values().map(|i| points_screen[i]).collect()
+    closest_point_map.into_values().map(|i| screen_points_with_index[i]).collect()
 }
 
-pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_depth: &Vec<Vector2<usize>>, points_cam: &Matrix3xX<f32>, intrinsic_matrix: &Matrix3<f32>) -> Vec<Vector2<usize>> {
-    let screen_point_set = screen_points_with_depth.iter().map(|v| (v.x,v.y)).collect::<HashSet<(usize,usize)>>();
+pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_index: &Vec<(usize,Vector2<usize>)>, points_cam: &Matrix3xX<f32>, intrinsic_matrix: &Matrix3<f32>) -> Vec<(usize,Vector2<usize>)> {
     let fx = intrinsic_matrix[(0,0)] as f64;
     let fy = intrinsic_matrix[(1,1)] as f64;
     let cx = intrinsic_matrix[(0,2)] as f64;
     let cy = intrinsic_matrix[(1,2)] as f64;
 
-    let mut avg_x = 0.0; let mut avg_y = 0.0; let mut avg_z = 0.0;
+    let mut avg_x = 0.0; let mut avg_y = 0.0;
     let ncols_f32 = points_cam.ncols() as f32;
 
     for c in points_cam.column_iter() {
         avg_x += c.x;
         avg_y += c.y;
-        avg_z += c.z;
     }
 
     avg_x /= ncols_f32;
     avg_y /= ncols_f32;
-    avg_z /= ncols_f32;
 
-    let mut std_x = 0.0; let mut std_y = 0.0; let mut std_z = 0.0;
+    let mut std_x = 0.0; let mut std_y = 0.0;
 
     for c in points_cam.column_iter() {
         std_x += (c.x - avg_x).powi(2);
         std_y += (c.y - avg_y).powi(2);
-        std_z += (c.z - avg_z).powi(2);
     }
 
     std_x = (std_x/(ncols_f32-1.0)).sqrt();
     std_y = (std_y/(ncols_f32-1.0)).sqrt();
-    std_z = (std_z/(ncols_f32-1.0)).sqrt();
 
     let std_x_pix = std_x as f64/fx*(2.0f64*cx);
     let std_y_pix = std_y as f64/fy*(2.0f64*cy);
@@ -69,11 +69,13 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
 
     let sub_pix_res = 10;
     let triangles = (0..points_cam.ncols()-2).step_by(3).map(|i| (points_cam.column(i).into_owned(),points_cam.column(i+1).into_owned(),points_cam.column(i+2).into_owned())).collect::<Vec<(_,_,_)>>();
-    screen_point_set.iter().filter(|(u,v)| {
+    screen_points_with_index.iter().filter(|(_,screen_point)| {
+        let u = screen_point.x;
+        let v = screen_point.y;
         (0..sub_pix_res).map (|off| {
             let frac = off as f64/sub_pix_res as f64;
-            let u_f64 = *u as f64 + frac;
-            let v_f64 = *v as f64 + frac;
+            let u_f64 = u as f64 + frac;
+            let v_f64 = v as f64 + frac;
             // Direction is just pixel back-projected along -Z-Axis
             let dir = (Vector3::<f64>::new(-1.0*(u_f64-cx)/fx,-1.0*(v_f64-cy)/fy,-1.0)).normalize();
             let orig = Vector3::<f64>::zeros();
@@ -98,7 +100,7 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
                 }
             }
         }).any(|b| b)
-    }).map(|&(u,v)| Vector2::<usize>::new(u,v)).collect::<Vec<_>>()
+    }).map(|&(i,screen_point)| (i,screen_point)).collect::<Vec<_>>()
 }
 
 //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.html
