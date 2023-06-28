@@ -1,18 +1,16 @@
 extern crate gltf;
 extern crate nalgebra as na;
-extern crate png;
 
 mod byte_array_info;
+mod feature_matches;
 pub mod filter;
+pub mod io;
 
-use std::path::Path;
-use std::fs::File;
-use std::io::BufWriter;
-use std::result::Result;
-
+use std::iter::zip;
+use std::collections::HashMap;
 use byte_array_info::ByteArrayInfo;
 use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX};
-use png::EncodingError;
+
 
 /**
  * Returns a Vec<ByteArrayInfo> of position data
@@ -103,23 +101,12 @@ pub fn calculate_rgb_byte_vec(screen_points: &Vec<Vector2<usize>>, screen_width:
     dat_vec
 }
 
-pub fn write_data_to_file(path_str: &str, data_vec: &Vec<u8>, screen_width: u32, screen_height: u32) -> Result<(),EncodingError> {
-    let path = Path::new(path_str);
-    let file = File::create(path).unwrap();
-    let ref mut w = BufWriter::new(file);
-
-    let mut encoder = png::Encoder::new(w, screen_width, screen_height); 
-    encoder.set_color(png::ColorType::Rgb);
-    encoder.set_depth(png::BitDepth::Eight);
-    encoder.set_source_gamma(png::ScaledFloat::new(1.0 / 2.2));     // 1.0 / 2.2, unscaled, but rounded
-    let source_chromaticities = png::SourceChromaticities::new(     // Using unscaled instantiation here
-        (0.31270, 0.32900),
-        (0.64000, 0.33000),
-        (0.30000, 0.60000),
-        (0.15000, 0.06000)
-    );
-    encoder.set_source_chromaticities(source_chromaticities);
-    let mut writer = encoder.write_header().unwrap();
-
-    writer.write_image_data(&data_vec[..]) // Save
+pub fn generate_matches(view_matrices: &Vec<Matrix3x4<f32>>, features: &Vec<Vec<(usize,Vector2<usize>)>>) -> Vec<feature_matches::FeatureMatches> {
+    assert_eq!(view_matrices.len(), features.len());
+    zip(view_matrices,features).enumerate().map(|(cam_id,(view_matrix,screen_points_with_id))| {
+        let point_map = screen_points_with_id.into_iter().map(|&(k,v)| (k,v)).collect::<HashMap<usize,Vector2<usize>>>();
+        feature_matches::FeatureMatches::new(point_map,cam_id,view_matrix.clone()) 
+    }).collect()
 }
+
+

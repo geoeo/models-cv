@@ -17,7 +17,8 @@ impl ByteArrayInfo {
         buffer_index: usize,
         byte_offset: usize,
         byte_length: usize,
-        byte_stride: Option<usize>) -> ByteArrayInfo {
+        byte_stride: Option<usize>) 
+            -> ByteArrayInfo {
             ByteArrayInfo {
                 data_type,
                 data_dimension,
@@ -26,7 +27,7 @@ impl ByteArrayInfo {
                 byte_length,
                 byte_stride
             }
-        }
+    }
 
     pub fn get_data_type(&self) -> DataType {self.data_type}
     pub fn get_data_dimension(&self) -> Dimensions {self.data_dimension}

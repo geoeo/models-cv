@@ -59,7 +59,7 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
         let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();
         let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
         let name = format!("/home/marc/Workspace/Rust/models-cv/output/test_suzanne_{}.png",camera_id+1);
-        models_cv::write_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
+        models_cv::io::write_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
     }
 
 }
