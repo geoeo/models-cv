@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 mod byte_array_info;
-mod feature_matches;
+pub mod feature_matches;
 pub mod filter;
 pub mod io;
 
