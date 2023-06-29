@@ -1,6 +1,4 @@
-extern crate models_cv;
 extern crate nalgebra as na;
-extern crate kiss3d;
 
 use kiss3d::event::{WindowEvent , Key};
 use kiss3d::window::Window;

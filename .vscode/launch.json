@@ -150,6 +150,25 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'io'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=io",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "io",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

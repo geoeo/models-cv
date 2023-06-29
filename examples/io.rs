@@ -1,5 +1,6 @@
 extern crate nalgebra as na;
 
+use models_cv::io::{serialize_feature_matches,deserialize_feature_matches};
 use na::{Vector3,Isometry3,Point3, Matrix3};
 
 fn main() {
@@ -54,11 +55,19 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
             screen_height,
             models_cv::filter::FilterType::TriangleIntersection
         );
-    for (camera_id, visible_points_for_cam) in visible_screen_points_with_idx.iter().enumerate() {
-        let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();
-        let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
-        let name = format!("/home/marc/Workspace/Rust/models-cv/output/test_suzanne_{}.png",camera_id+1);
-        models_cv::io::write_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
-    }
+    
+    let feature_matches = models_cv::generate_matches(&view_matrices, &visible_screen_points_with_idx);
+
+    let paths = feature_matches.iter().enumerate().map(|(i,matches)| {
+        let path = format!("/home/marc/Workspace/Rust/models-cv/output/feature_matches_{}.yaml",i+1);
+        serialize_feature_matches(&path, matches).expect("Serialzing failed");
+        path
+    }).collect::<Vec<String>>();
+
+    let _ = paths.iter().map(|path| {
+        deserialize_feature_matches(&path)
+    }).collect::<Vec<_>>();
+
+
 
 }

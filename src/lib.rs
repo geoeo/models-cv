@@ -1,4 +1,3 @@
-extern crate gltf;
 extern crate nalgebra as na;
 
 mod byte_array_info;

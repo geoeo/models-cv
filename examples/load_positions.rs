@@ -1,4 +1,3 @@
-extern crate models_cv;
 use std::error::Error as StdError;
 
 fn main() {

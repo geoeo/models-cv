@@ -1,6 +1,4 @@
-extern crate gltf;
 use gltf::accessor::{DataType,Dimensions};
-
 pub struct ByteArrayInfo {
     data_type: DataType, 
     data_dimension: Dimensions,
