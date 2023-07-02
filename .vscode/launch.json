@@ -154,11 +154,10 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in example 'io'",
+            "name": "Debug example 'io'",
             "cargo": {
                 "args": [
-                    "test",
-                    "--no-run",
+                    "build",
                     "--example=io",
                     "--package=models-cv"
                 ],

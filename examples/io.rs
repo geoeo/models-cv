@@ -5,21 +5,23 @@ use na::{Vector3,Isometry3,Point3, Matrix3};
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
-        let points = load_points(&path);
-        project_points(&points.into_iter().flatten().collect::<Vec<_>>());
+        let (points,names) = load_data(&path);
+        let name = names.first().expect("No name for mesh");
+        project_points(&points.into_iter().flatten().collect::<Vec<_>>(), name);
     } else {
         println!("usage: gltf-display <FILE>");
     }
 }
 
-fn load_points(path: &str) -> Vec<Vec<Vector3<f32>>> {
+fn load_data(path: &str) -> (Vec<Vec<Vector3<f32>>>, Vec<String>) {
     let (document,buffers,_) = gltf::import(path).expect("Could not load gltf file");
     let position_buffer_info = models_cv::find_position_buffer_data(&document);
     let positions_byte_data = models_cv::load_position_byte_data(position_buffer_info, &buffers);
-    models_cv::convert_byte_data_to_vec3(positions_byte_data)
+    let names = document.meshes().into_iter().map(|m| m.name().expect("no name for mesh").to_string()).collect::<Vec<String>>();
+    (models_cv::convert_byte_data_to_vec3(positions_byte_data), names)
 }
 
-fn project_points(points: &Vec<Vector3<f32>>) -> () {
+fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
     let scene_capacity: usize = points.len();
 
     let mut scene_center = Vector3::<f32>::new(0.0, 0.0, 0.0);
@@ -57,17 +59,10 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
         );
     
     let feature_matches = models_cv::generate_matches(&view_matrices, &visible_screen_points_with_idx);
-
-    let paths = feature_matches.iter().enumerate().map(|(i,matches)| {
-        let path = format!("/home/marc/Workspace/Rust/models-cv/output/feature_matches_{}.yaml",i+1);
-        serialize_feature_matches(&path, matches).expect("Serialzing failed");
-        path
-    }).collect::<Vec<String>>();
-
-    let _ = paths.iter().map(|path| {
-        deserialize_feature_matches(&path)
-    }).collect::<Vec<_>>();
-
+    let path = format!("/home/marc/Workspace/Rust/models-cv/output/feature_matches_{}.yaml",mesh_name);
+    serialize_feature_matches(&path, &feature_matches).expect("Serialzing failed");
+    let loaded_data = deserialize_feature_matches(&path);
+    assert_eq!(feature_matches,loaded_data);
 
 
 }
