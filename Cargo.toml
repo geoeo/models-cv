@@ -8,9 +8,9 @@ edition = "2021"
 [dependencies]
 gltf = {version="1.2", features = ["extras","names"]}
 nalgebra = "*"
-png = "*"
 serde = { version = "*", features = ["derive"] }
 serde_yaml = "*"
 
 [dev-dependencies]
 kiss3d = "*"
+png = "*"
