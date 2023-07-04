@@ -48,6 +48,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
         f,0.0,cx,
         0.0,f,cy,
         0.0,0.0,1.0);
+    let intrinsic_matrices = vec![intrinsic_matrix;view_matrices.len()];
     
     let visible_screen_points_with_idx 
         = models_cv::filter_screen_points_for_camera_views(
@@ -58,7 +59,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
             models_cv::filter::FilterType::TriangleIntersection
         );
     
-    let feature_matches = models_cv::generate_matches(&view_matrices, &visible_screen_points_with_idx);
+    let feature_matches = models_cv::generate_matches(&view_matrices,&intrinsic_matrices, &visible_screen_points_with_idx);
     let path = format!("/home/marc/Workspace/Rust/models-cv/output/feature_matches_{}.yaml",mesh_name);
     serialize_feature_matches(&path, &feature_matches).expect("Serialzing failed");
     let loaded_data = deserialize_feature_matches(&path);

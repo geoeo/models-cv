@@ -1,27 +1,30 @@
 extern crate nalgebra as na;
 
-use na::{Vector2,Matrix3x4};
+use na::{Vector2,Matrix3x4,Matrix3};
 use std::collections::HashMap;
 
 #[derive(Debug,PartialEq)]
 pub struct FeatureMatches {
     match_map: HashMap<usize,Vector2<usize>>,
     cam_id: usize,
-    view_matrix: Matrix3x4<f32>
+    view_matrix: Matrix3x4<f32>,
+    intrinsic_matrix: Matrix3<f32>
 }
 
 impl FeatureMatches {
-    pub fn new(match_map: HashMap<usize,Vector2<usize>>, cam_id: usize, view_matrix: Matrix3x4<f32>) -> FeatureMatches {
+    pub fn new(match_map: HashMap<usize,Vector2<usize>>, cam_id: usize, view_matrix: Matrix3x4<f32>,intrinsic_matrix: Matrix3<f32>) -> FeatureMatches {
         FeatureMatches {
             match_map,
             cam_id,
-            view_matrix
+            view_matrix,
+            intrinsic_matrix
         }
     }
     pub fn get_match_map(&self) -> &HashMap<usize,Vector2<usize>> {&self.match_map}
     pub fn get_cam_id(&self) -> usize {self.cam_id}
     pub fn get_view_matrix(&self) ->  Matrix3x4<f32> {self.view_matrix}
-    pub fn to_serial(fm_vec: &Vec<FeatureMatches>) -> Vec<(usize, [f32;12], Vec<(usize,(usize,usize))>)> {
+    pub fn get_intrinsic_matrix(&self) ->  Matrix3<f32> {self.intrinsic_matrix}
+    pub fn to_serial(fm_vec: &Vec<FeatureMatches>) -> Vec<(usize, [f32;12],[f32;9], Vec<(usize,(usize,usize))>)> {
         fm_vec.into_iter().map(|fm|{
             let mut map_vec =  Vec::<(usize,(usize,usize))>::with_capacity(fm.match_map.len());
 
@@ -43,22 +46,41 @@ impl FeatureMatches {
                 fm.view_matrix[(2,2)],
                 fm.view_matrix[(2,3)],
                 ],
+                [
+                fm.intrinsic_matrix[(0,0)],
+                fm.intrinsic_matrix[(0,1)],
+                fm.intrinsic_matrix[(0,2)],
+                fm.intrinsic_matrix[(1,0)],
+                fm.intrinsic_matrix[(1,1)],
+                fm.intrinsic_matrix[(1,2)],
+                fm.intrinsic_matrix[(2,0)],
+                fm.intrinsic_matrix[(2,1)],
+                fm.intrinsic_matrix[(2,2)]
+                ],
                 map_vec
             )
         }).collect::<Vec<_>>()
 
     }
 
-    pub fn from_serial(serial: &Vec<(usize, [f32;12], Vec<(usize,(usize,usize))>)>) -> Vec<FeatureMatches> {
+    pub fn from_serial(serial: &Vec<(usize, [f32;12], [f32;9], Vec<(usize,(usize,usize))>)>) -> Vec<FeatureMatches> {
         serial.into_iter().map(|s| {
             let cam_id = s.0;
-            let arr = &s.1;
+            let view_arr = &s.1;
+            let intrinsic_arr = &s.2;
+            let vec = &s.3;
+
             let view_matrix = Matrix3x4::<f32>::new(
-                arr[0],arr[1],arr[2],arr[3],
-                arr[4],arr[5],arr[6],arr[7],
-                arr[8],arr[9],arr[10],arr[11],
+                view_arr[0],view_arr[1],view_arr[2],view_arr[3],
+                view_arr[4],view_arr[5],view_arr[6],view_arr[7],
+                view_arr[8],view_arr[9],view_arr[10],view_arr[11],
             );
-            let vec = &s.2;
+            let intrinsic_matrix = Matrix3::<f32>::new(
+                intrinsic_arr[0],intrinsic_arr[1],intrinsic_arr[2],
+                intrinsic_arr[3],intrinsic_arr[4],intrinsic_arr[5],
+                intrinsic_arr[6],intrinsic_arr[7],intrinsic_arr[8],
+            );
+
             let mut match_map = HashMap::<usize,Vector2<usize>>::with_capacity(vec.len());
             for &(point_id,(x,y)) in vec {
                 match_map.insert(point_id, Vector2::new(x,y));
@@ -67,7 +89,8 @@ impl FeatureMatches {
             FeatureMatches {
                 match_map,
                 cam_id,
-                view_matrix
+                view_matrix,
+                intrinsic_matrix
             }
     
         }).collect::<Vec<_>>()
