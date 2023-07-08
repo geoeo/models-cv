@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 mod byte_array_info;
-pub mod feature_matches;
+pub mod camera_features;
 pub mod filter;
 pub mod io;
 
@@ -100,11 +100,11 @@ pub fn calculate_rgb_byte_vec(screen_points: &Vec<Vector2<usize>>, screen_width:
     dat_vec
 }
 
-pub fn generate_matches(view_matrices: &Vec<Matrix3x4<f32>>, intrinsic_matrices: &Vec<Matrix3<f32>>, features: &Vec<Vec<(usize,Vector2<usize>)>>) -> Vec<feature_matches::FeatureMatches> {
+pub fn generate_matches(view_matrices: &Vec<Matrix3x4<f32>>, intrinsic_matrices: &Vec<Matrix3<f32>>, features: &Vec<Vec<(usize,Vector2<usize>)>>) -> Vec<camera_features::CameraFeatures> {
     assert_eq!(view_matrices.len(), features.len());
     zip(zip(view_matrices,intrinsic_matrices),features).enumerate().map(|(cam_id,((view_matrix,intrinsic_matrix),screen_points_with_id))| {
         let point_map = screen_points_with_id.into_iter().map(|&(k,v)| (k,v)).collect::<HashMap<usize,Vector2<usize>>>();
-        feature_matches::FeatureMatches::new(point_map,cam_id,view_matrix.clone(),intrinsic_matrix.clone()) 
+        camera_features::CameraFeatures::new(point_map,cam_id,view_matrix.clone(),intrinsic_matrix.clone()) 
     }).collect()
 }
 

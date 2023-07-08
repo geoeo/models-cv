@@ -154,15 +154,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'io'",
+            "name": "Debug example 'Save Points'",
             "cargo": {
                 "args": [
                     "build",
-                    "--example=io",
+                    "--example=save_points",
                     "--package=models-cv"
                 ],
                 "filter": {
-                    "name": "io",
+                    "name": "save_points",
                     "kind": "example"
                 }
             },
