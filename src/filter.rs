@@ -3,7 +3,7 @@ extern crate nalgebra as na;
 use na::{Vector2, Vector3, Matrix3xX, Matrix3};
 use std::collections::HashMap;
 
-const BARY_EPS: f64 = 1e-12;
+const BARY_EPS: f64 = 1e-2;
 const DET_EPS: f64 = 1e-8;
 
 pub enum FilterType {
@@ -11,18 +11,17 @@ pub enum FilterType {
     TriangleIntersection
 }
 
-pub fn filter_visible_screen_points_by_depth(screen_points_with_index: &Vec<(usize,Vector2<usize>)>, points_cam: &Matrix3xX<f32>) -> Vec<(usize,Vector2<usize>)> {
-    assert_eq!(screen_points_with_index.len(),points_cam.ncols());
+pub fn filter_visible_screen_points_by_depth(screen_points_with_index: &Vec<(usize,Vector2<usize>)>, points_cam: &Matrix3xX<f32>,) -> Vec<(usize,Vector2<usize>)> {
     let mut closest_point_map = HashMap::<(usize,usize), usize>::with_capacity(screen_points_with_index.len());
-    for &(i,screen_p) in screen_points_with_index.iter() {
+    for (i,&(global_id,screen_p)) in screen_points_with_index.iter().enumerate() {
         let key = (screen_p.x,screen_p.y);
         match closest_point_map.contains_key(&key) {
             true => {
                 let current_point_index = closest_point_map.get(&key).unwrap();
                 let current_point_depth = points_cam[*current_point_index];
-                let depth = points_cam[(2,i)];
+                let depth = points_cam[(2,global_id)];
                 // GLTF models are displayed along the negative Z-Axis
-                if depth > current_point_depth {
+                if depth > current_point_depth  {
                     closest_point_map.insert(key, i);
                 }
             },
@@ -38,36 +37,12 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
     let cx = intrinsic_matrix[(0,2)] as f64;
     let cy = intrinsic_matrix[(1,2)] as f64;
 
-    let mut avg_x = 0.0; let mut avg_y = 0.0;
-    let ncols_f32 = points_cam.ncols() as f32;
 
-    for c in points_cam.column_iter() {
-        avg_x += c.x;
-        avg_y += c.y;
-    }
+    //TODO uniform eps
+    let l2_eps = 1e-2; // Suzanne
+    //let l2_eps = 1e1; // Cube
 
-    avg_x /= ncols_f32;
-    avg_y /= ncols_f32;
-
-    let mut std_x = 0.0; let mut std_y = 0.0;
-
-    for c in points_cam.column_iter() {
-        std_x += (c.x - avg_x).powi(2);
-        std_y += (c.y - avg_y).powi(2);
-    }
-
-    std_x = (std_x/(ncols_f32-1.0)).sqrt();
-    std_y = (std_y/(ncols_f32-1.0)).sqrt();
-
-    let std_x_pix = std_x as f64/fx*(2.0f64*cx);
-    let std_y_pix = std_y as f64/fy*(2.0f64*cy);
-    let std_xy_avg = (std_x_pix+std_y_pix)/2.0f64;
-    let exp = ((0.5-std_xy_avg).abs()*10.0).floor();
-
-    //TODO: Implement depth buffering for a better result than a heuristic
-    let l2_eps = 10.0f64.powf(-exp);
-
-    let sub_pix_res = 10;
+    let sub_pix_res = 1;
     let triangles = (0..points_cam.ncols()-2).step_by(3).map(|i| (points_cam.column(i).into_owned(),points_cam.column(i+1).into_owned(),points_cam.column(i+2).into_owned())).collect::<Vec<(_,_,_)>>();
     screen_points_with_index.iter().filter(|(_,screen_point)| {
         let u = screen_point.x;

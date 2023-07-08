@@ -41,7 +41,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
     }).collect::<Vec<_>>();
     let screen_width = 640.0;
     let screen_height = 480.0;
-    let f = 1000.0; 
+    let f = -1000.0; 
     let cx = screen_width/2.0;
     let cy = screen_height/2.0;
     let intrinsic_matrix = Matrix3::<f32>::new(

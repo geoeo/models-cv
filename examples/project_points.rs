@@ -34,7 +34,7 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(0.0,0.0,-5.0)];
+    let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,5.0),Point3::new(0.0,0.0,-5.0)];
     
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let view_matrices = eyes.iter().map(|eye| {
@@ -43,7 +43,7 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
     }).collect::<Vec<_>>();
     let screen_width = 640.0;
     let screen_height = 480.0;
-    let f = 1000.0; 
+    let f = -1000.0; 
     let cx = screen_width/2.0;
     let cy = screen_height/2.0;
     let intrinsic_matrix = Matrix3::<f32>::new(
