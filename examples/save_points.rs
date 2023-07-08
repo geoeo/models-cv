@@ -60,7 +60,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
         );
     
     let camera_features = models_cv::generate_matches(&view_matrices,&intrinsic_matrices, &visible_screen_points_with_idx);
-    let path = format!("/home/marc/Workspace/Rust/models-cv/output/feature_matches_{}.yaml",mesh_name);
+    let path = format!("/home/marc/Workspace/Rust/models-cv/output/camera_features_{}.yaml",mesh_name);
     serialize_feature_matches(&path, &camera_features).expect("Serialzing failed");
     let loaded_data = deserialize_feature_matches(&path);
     assert_eq!(camera_features,loaded_data);
