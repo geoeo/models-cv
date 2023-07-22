@@ -5,11 +5,12 @@ pub mod filter;
 pub mod io;
 pub mod gltf;
 pub mod obj;
+pub mod rasterizer;
+pub mod triangle;
 
 use std::iter::zip;
 use std::collections::HashMap;
 use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX};
-
 
 pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>, screen_width: f32, screen_height: f32) -> (Vec<(usize,Vector2<usize>)>, Matrix3xX<f32>) {
     let mut ps = Matrix4xX::<f32>::from_element(points.len(), 1.0);

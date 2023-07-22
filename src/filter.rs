@@ -2,6 +2,7 @@ extern crate nalgebra as na;
 
 use na::{Vector2, Vector3, Matrix3xX, Matrix3};
 use std::collections::HashMap;
+use crate::triangle::Triangle;
 
 const BARY_EPS: f64 = 1e-1;
 const DET_EPS: f64 = 1e-8;
@@ -43,7 +44,7 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
     //let l2_eps = 1e1; // Cube, Sphere
 
     let sub_pix_res = 1;
-    let triangles = (0..points_cam.ncols()-2).step_by(3).map(|i| (points_cam.column(i).into_owned(),points_cam.column(i+1).into_owned(),points_cam.column(i+2).into_owned())).collect::<Vec<(_,_,_)>>();
+    let triangles = (0..points_cam.ncols()-2).step_by(3).map(|i| Triangle::<3>::from_view(&points_cam.column(i),&points_cam.column(i+1),&points_cam.column(i+2))).collect::<Vec<Triangle<3>>>();
     screen_points_with_index.iter().filter(|(_,screen_point)| {
         let u = screen_point.x;
         let v = screen_point.y;
@@ -54,10 +55,10 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
             // Direction is just pixel back-projected along -Z-Axis
             let dir = (Vector3::<f64>::new(-1.0*(u_f64-cx)/fx,-1.0*(v_f64-cy)/fy,-1.0)).normalize();
             let orig = Vector3::<f64>::zeros();
-            let ts = triangles.iter().map(|(v0,v1,v2)| {
-                let v0_f64 = v0.cast::<f64>();
-                let v1_f64 = v1.cast::<f64>();
-                let v2_f64 = v2.cast::<f64>();
+            let ts = triangles.iter().map(|triangle| {
+                let v0_f64 = triangle.get_v0().cast::<f64>();
+                let v1_f64 = triangle.get_v1().cast::<f64>();
+                let v2_f64 = triangle.get_v2().cast::<f64>();
                 ray_triangle_intersection(&orig, &dir, &v0_f64, &v1_f64, &v2_f64)
             }).filter(|o| o.is_some()).collect::<Vec<_>>();
             match ts.len() {
