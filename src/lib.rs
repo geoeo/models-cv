@@ -4,6 +4,7 @@ pub mod camera_features;
 pub mod filter;
 pub mod io;
 pub mod gltf;
+pub mod obj;
 
 use std::iter::zip;
 use std::collections::HashMap;
