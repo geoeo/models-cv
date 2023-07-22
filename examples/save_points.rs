@@ -15,10 +15,10 @@ fn main() {
 
 fn load_data(path: &str) -> (Vec<Vec<Vector3<f32>>>, Vec<String>) {
     let (document,buffers,_) = gltf::import(path).expect("Could not load gltf file");
-    let position_buffer_info = models_cv::find_position_buffer_data(&document);
-    let positions_byte_data = models_cv::load_position_byte_data(position_buffer_info, &buffers);
+    let position_buffer_info = models_cv::gltf::find_position_buffer_data(&document);
+    let positions_byte_data = models_cv::gltf::load_position_byte_data(position_buffer_info, &buffers);
     let names = document.meshes().into_iter().map(|m| m.name().expect("no name for mesh").to_string()).collect::<Vec<String>>();
-    (models_cv::convert_byte_data_to_vec3(positions_byte_data), names)
+    (models_cv::gltf::convert_byte_data_to_vec3(positions_byte_data), names)
 }
 
 fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
@@ -32,7 +32,8 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(0.0,0.0,-5.0)];
+    //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(0.0,0.0,-5.0)];
+    let eyes = vec![Point3::new(0.5,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-0.5,0.0,5.0)];
     
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let view_matrices = eyes.iter().map(|eye| {
@@ -56,7 +57,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
             &view_matrices,
             screen_width,
             screen_height,
-            models_cv::filter::FilterType::TriangleIntersection
+            models_cv::filter::FilterType::Depth
         );
     
     let camera_features = models_cv::generate_matches(&view_matrices,&intrinsic_matrices, &visible_screen_points_with_idx);

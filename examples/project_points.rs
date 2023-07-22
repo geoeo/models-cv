@@ -18,9 +18,9 @@ fn main() {
 
 fn load_points(path: &str) -> Vec<Vec<Vector3<f32>>> {
     let (document,buffers,_) = gltf::import(path).expect("Could not load gltf file");
-    let position_buffer_info = models_cv::find_position_buffer_data(&document);
-    let positions_byte_data = models_cv::load_position_byte_data(position_buffer_info, &buffers);
-    models_cv::convert_byte_data_to_vec3(positions_byte_data)
+    let position_buffer_info = models_cv::gltf::find_position_buffer_data(&document);
+    let positions_byte_data = models_cv::gltf::load_position_byte_data(position_buffer_info, &buffers);
+    models_cv::gltf::convert_byte_data_to_vec3(positions_byte_data)
 }
 
 fn project_points(points: &Vec<Vector3<f32>>) -> () {
@@ -34,7 +34,9 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,5.0),Point3::new(0.0,0.0,-5.0)];
+    //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,5.0),Point3::new(0.0,0.0,-5.0)];
+    //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(-3.0,0.0,4.0)];
+    let eyes = vec![Point3::new(0.5,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-0.5,0.0,5.0)];
     
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let view_matrices = eyes.iter().map(|eye| {
@@ -57,11 +59,11 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
             &view_matrices,
             screen_width,
             screen_height,
-            models_cv::filter::FilterType::TriangleIntersection
+            models_cv::filter::FilterType::Depth
         );
     for (camera_id, visible_points_for_cam) in visible_screen_points_with_idx.iter().enumerate() {
         let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();
-        let data_vec = models_cv::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
+        let data_vec = models_cv::io::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
         let name = format!("/home/marc/Workspace/Rust/models-cv/output/test_suzanne_{}.png",camera_id+1);
         write_png_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
         write_test_png();

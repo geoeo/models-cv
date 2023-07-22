@@ -3,7 +3,7 @@ extern crate nalgebra as na;
 use na::{Vector2, Vector3, Matrix3xX, Matrix3};
 use std::collections::HashMap;
 
-const BARY_EPS: f64 = 1e-2;
+const BARY_EPS: f64 = 1e-1;
 const DET_EPS: f64 = 1e-8;
 
 pub enum FilterType {
@@ -40,7 +40,7 @@ pub fn filter_visible_screen_points_by_triangle_intersection(screen_points_with_
 
     //TODO uniform eps
     let l2_eps = 1e-2; // Suzanne
-    //let l2_eps = 1e1; // Cube
+    //let l2_eps = 1e1; // Cube, Sphere
 
     let sub_pix_res = 1;
     let triangles = (0..points_cam.ncols()-2).step_by(3).map(|i| (points_cam.column(i).into_owned(),points_cam.column(i+1).into_owned(),points_cam.column(i+2).into_owned())).collect::<Vec<(_,_,_)>>();
