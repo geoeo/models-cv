@@ -1,12 +1,13 @@
 extern crate nalgebra as na;
+mod byte_array_info;
 
-use crate::byte_array_info::ByteArrayInfo;
 use na::Vector3;
+use byte_array_info::ByteArrayInfo;
 
 /**
  * Returns a Vec<ByteArrayInfo> of position data
  */
-pub fn find_position_buffer_data(document: &gltf::Document) -> Vec<ByteArrayInfo> { 
+fn find_position_buffer_data(document: &gltf::Document) -> Vec<ByteArrayInfo> { 
     document.meshes().map(|mesh| {
         mesh.primitives().map(|primitive| {
             primitive.attributes().filter(|attribute| attribute.0 == gltf::Semantic::Positions).map(|attr| {
@@ -17,7 +18,7 @@ pub fn find_position_buffer_data(document: &gltf::Document) -> Vec<ByteArrayInfo
     }).flatten().collect()
 }
 
-pub fn load_position_byte_data(position_buffer_info: Vec<ByteArrayInfo>, buffers: &Vec<gltf::buffer::Data>) -> Vec<&[u8]> {
+fn load_position_byte_data(position_buffer_info: Vec<ByteArrayInfo>, buffers: &Vec<gltf::buffer::Data>) -> Vec<&[u8]> {
     position_buffer_info.into_iter().map(|info| {
         let byte_end = info.get_byte_offset()+info.get_byte_length();
         match info.get_byte_stride() {
@@ -27,7 +28,7 @@ pub fn load_position_byte_data(position_buffer_info: Vec<ByteArrayInfo>, buffers
     }).collect()
 }
 
-pub fn convert_byte_data_to_vec3(position_byte_data: Vec<&[u8]>) -> Vec<Vec<Vector3<f32>>> {
+fn convert_byte_data_to_vec3(position_byte_data: Vec<&[u8]>) -> Vec<Vec<Vector3<f32>>> {
     position_byte_data.into_iter().map(|byte_slice| {
         let vec3_capacity = byte_slice.len() / 12;
         let mut data_vector = Vec::<Vector3<f32>>::with_capacity(vec3_capacity);
@@ -48,4 +49,19 @@ pub fn convert_byte_data_to_vec3(position_byte_data: Vec<&[u8]>) -> Vec<Vec<Vect
         }
         data_vector
     }).collect()
+}
+
+pub fn load(path: &str) -> (gltf::Document, Vec<gltf::buffer::Data>) {
+    let (document, buffers, _) = gltf::import(path).expect("Could not load gltf file");
+    (document, buffers)
+}
+
+pub fn load_vertex_positions(document: &gltf::Document, buffers: &Vec<gltf::buffer::Data>) -> Vec<Vec<Vector3<f32>>> {
+    let position_buffer_info = find_position_buffer_data(&document);
+    let positions_byte_data = load_position_byte_data(position_buffer_info, &buffers);
+    convert_byte_data_to_vec3(positions_byte_data)
+}
+
+pub fn load_mesh_names(document: gltf::Document) -> Vec<String> {
+    document.meshes().into_iter().map(|m| m.name().expect("no name for mesh").to_string()).collect::<Vec<String>>()
 }

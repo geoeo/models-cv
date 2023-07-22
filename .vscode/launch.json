@@ -168,6 +168,24 @@
             },
             "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'Load Obj'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=load_obj",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "load_obj",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/meshes/objects/sphere/sphere.obj"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

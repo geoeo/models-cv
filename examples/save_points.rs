@@ -14,11 +14,10 @@ fn main() {
 }
 
 fn load_data(path: &str) -> (Vec<Vec<Vector3<f32>>>, Vec<String>) {
-    let (document,buffers,_) = gltf::import(path).expect("Could not load gltf file");
-    let position_buffer_info = models_cv::gltf::find_position_buffer_data(&document);
-    let positions_byte_data = models_cv::gltf::load_position_byte_data(position_buffer_info, &buffers);
-    let names = document.meshes().into_iter().map(|m| m.name().expect("no name for mesh").to_string()).collect::<Vec<String>>();
-    (models_cv::gltf::convert_byte_data_to_vec3(positions_byte_data), names)
+    let (document, buffers) = models_cv::gltf::load(&path);
+    let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
+    let names = models_cv::gltf::load_mesh_names(document);
+    (points, names)
 }
 
 fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {

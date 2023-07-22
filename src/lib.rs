@@ -1,6 +1,5 @@
 extern crate nalgebra as na;
 
-mod byte_array_info;
 pub mod camera_features;
 pub mod filter;
 pub mod io;

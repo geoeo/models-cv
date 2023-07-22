@@ -5,7 +5,7 @@ fn main() {
     if let Some(path) = std::env::args().nth(1) {
         run(&path).expect("runtime error");
     } else {
-        println!("usage: gltf-display <FILE>");
+        println!("usage: load-gltf <FILE>");
     }
 }
 

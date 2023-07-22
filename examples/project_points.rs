@@ -9,19 +9,14 @@ use na::{Vector3,Isometry3,Point3, Matrix3};
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
-        let points = load_points(&path);
+        let (document, buffers) = models_cv::gltf::load(&path);
+        let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
         project_points(&points.into_iter().flatten().collect::<Vec<_>>());
     } else {
         println!("usage: gltf-display <FILE>");
     }
 }
 
-fn load_points(path: &str) -> Vec<Vec<Vector3<f32>>> {
-    let (document,buffers,_) = gltf::import(path).expect("Could not load gltf file");
-    let position_buffer_info = models_cv::gltf::find_position_buffer_data(&document);
-    let positions_byte_data = models_cv::gltf::load_position_byte_data(position_buffer_info, &buffers);
-    models_cv::gltf::convert_byte_data_to_vec3(positions_byte_data)
-}
 
 fn project_points(points: &Vec<Vector3<f32>>) -> () {
     let scene_capacity: usize = points.len();
