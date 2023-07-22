@@ -12,20 +12,26 @@ use std::rc::Rc;
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
-        let (document, buffers) = models_cv::gltf::load(&path);
-        let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
-        render_points(&points);
+        if path.ends_with(".gltf") {
+            let (document, buffers) = models_cv::gltf::load(&path);
+            let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
+            render_mesh(&points);
+        } else if path.ends_with(".obj") {
+            let model = models_cv::obj::load(&path);
+            let points = models_cv::obj::load_vertex_positions(&model);
+            render_mesh(&points);
+        }
     } else {
         println!("usage: gltf-display <FILE>");
     }
 }
 
-fn render_points(points: &Vec<Vec<Vector3<f32>>>) -> () {
+fn render_mesh(points: &Vec<Vec<Vector3<f32>>>) -> () {
     let scene_capacity: usize = points.iter().map(|vec| vec.iter().map(|ps| ps.len())).flatten().sum();
 
     let mut window = Window::new("Gltf Model");
     let mut scene_center = Vector3::<f32>::new(0.0, 0.0, 0.0);
-    println!("WARN: Assuming Triangle Mode for now with no indices defined!");
+    println!("WARN: Assuming Triangle Mode!");
 
     for vertices in points {
         let vertices_kiss3d = vertices.into_iter().map(|v| {

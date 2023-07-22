@@ -2,28 +2,28 @@ extern crate nalgebra as na;
 
 use na::Vector3;
 
-pub fn load(path: &str) -> Vec<tobj::Model> {
-    let (models, _) = tobj::load_obj(path, &tobj::LoadOptions::default()).expect("Failed to OBJ load file");
-    models
+pub fn load(path: &str) -> obj::Obj {
+    obj::Obj::load(path).unwrap()
 }
 
-pub fn load_vertex_positions(models: &Vec<tobj::Model>) -> Vec<Vec<Vector3<f32>>> {
-    models.iter().map(|m| {
-        let indices = &m.mesh.indices;
-        let obj_positions = &m.mesh.positions;
-        let number_of_indices = indices.len();
-        let number_of_vertices = number_of_indices/3;
-        let mut positions = Vec::<Vector3<f32>>::with_capacity(number_of_vertices);
-        for i in (0..number_of_indices).step_by(3) {
-            let i_x = indices[i] as usize;
-            let i_y = indices[i+1] as usize;
-            let i_z = indices[i+2] as usize;
+pub fn load_vertex_positions(models: &obj::Obj) -> Vec<Vec<Vector3<f32>>> {
+    models.data.objects.iter().map(|o| {
+        o.groups.iter().map(|g| {
+            g.polys.iter().map(|p| {
+                let i1 = p.0[0].0;
+                let i2 = p.0[1].0;
+                let i3 = p.0[2].0;
 
-            let v_x = obj_positions[i_x];
-            let v_y = obj_positions[i_y];
-            let v_z = obj_positions[i_z];
-            positions.push(Vector3::new(v_x,v_y,v_z));
-        }
-        positions
-    }).collect()
+                let p0 = models.data.position[i1];
+                let p1 = models.data.position[i2];
+                let p2 = models.data.position[i3];
+
+                vec!(
+                    Vector3::new(p0[0],p0[1],p0[2]),
+                    Vector3::new(p1[0],p1[1],p1[2]),
+                    Vector3::new(p2[0],p2[1],p2[2]))
+            }).flatten().collect::<Vec<_>>()
+        }).flatten().collect::<Vec<_>>()
+    }).collect::<Vec<_>>()
+
 }

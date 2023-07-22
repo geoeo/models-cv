@@ -9,9 +9,15 @@ use na::Vector3;
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
-        let (document, buffers) = models_cv::gltf::load(&path);
-        let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
-        render_points(&points);
+        if path.ends_with(".gltf") {
+            let (document, buffers) = models_cv::gltf::load(&path);
+            let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
+            render_points(&points);
+        } else if path.ends_with(".obj") {
+            let model = models_cv::obj::load(&path);
+            let points = models_cv::obj::load_vertex_positions(&model);
+            render_points(&points);
+        }
     } else {
         println!("usage: gltf-display <FILE>");
     }

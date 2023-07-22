@@ -172,15 +172,33 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'Load Obj'",
+            "name": "Debug example 'Render Points Obj'",
             "cargo": {
                 "args": [
                     "build",
-                    "--example=load_obj",
+                    "--example=render_points",
                     "--package=models-cv"
                 ],
                 "filter": {
-                    "name": "load_obj",
+                    "name": "render_points",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/meshes/objects/sphere/sphere.obj"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'Render Mesh Obj'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=render_mesh",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "render_mesh",
                     "kind": "example"
                 }
             },
