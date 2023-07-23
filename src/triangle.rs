@@ -2,6 +2,7 @@ extern crate nalgebra as na;
 
 use na::{SVector,SVectorView};
 
+// Assuming Counter-Clockwise winding order
 pub struct Triangle<const D: usize> {
     v0: SVector::<f32,D>,
     v1: SVector::<f32,D>,
