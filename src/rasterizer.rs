@@ -60,8 +60,8 @@ pub fn calc_all_pixels_within_triangle(triangle: &Triangle<2>) -> Vec<(f32,f32,f
 /**
  * Calcualte the depth for all pixels inside a triangle using perspective correct interpolation
  */
-pub fn calc_z_for_all_pixels(barycentric_pixels: &Vec<(f32,f32,f32,Triangle<3>)>) -> Vec<f32> {
-    barycentric_pixels.iter().map(|(w0,w1,w2,triangle3d)| {
+pub fn calc_z_for_all_pixels(barycentric_pixels: &Vec<(f32,f32,f32)>, triangle3d: &Triangle<3>) -> Vec<f32> {
+    barycentric_pixels.iter().map(|(w0,w1,w2)| {
         let inv_z = w0 / triangle3d.get_v0().z + w1 / triangle3d.get_v1().z + w2 / triangle3d.get_v2().z;
         1.0 / inv_z
     }).collect()

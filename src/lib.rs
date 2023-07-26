@@ -32,17 +32,18 @@ pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32
     (screen_points_with_idx, points_cam)
 }
 
-pub fn group_points_to_triangles(points: &(Vec<(usize,Vector2<usize>)>, Matrix3xX<f32>)) -> Vec<(Triangle<2>,Triangle<3>)> {
-    let pixels = &points.0;
-    let cam_points = &points.1;
-    (0..pixels.len()-2).map(|i| {
-        let (id_0,pix_v0) = pixels[i];
-        let (id_1,pix_v1) = pixels[i+1];
-        let (id_2,pix_v2) = pixels[i+1];
+pub fn group_points_to_triangles(pixels_with_id: &Vec<(usize,Vector2<usize>)>, cam_points: &Matrix3xX<f32>) -> Vec<(Triangle<2>,Triangle<3>)> {
+    (0..pixels_with_id.len()-2).map(|i| {
+        let (id_0,pix_v0) = pixels_with_id[i];
+        let (id_1,pix_v1) = pixels_with_id[i+1];
+        let (id_2,pix_v2) = pixels_with_id[i+1];
         let cam_point_v0 = cam_points.column(id_0);
         let cam_point_v1 = cam_points.column(id_1);
         let cam_point_v2 = cam_points.column(id_2);
-        (Triangle::from_vec(&pix_v0.cast::<f32>(),&pix_v1.cast::<f32>(),&pix_v2.cast::<f32>()),Triangle::from_view(&cam_point_v0, &cam_point_v1, &cam_point_v2))
+        (
+            Triangle::from_vec(&pix_v0.cast::<f32>(), Some(id_0) ,&pix_v1.cast::<f32>(), Some(id_1), &pix_v2.cast::<f32>(), Some(id_2)),
+            Triangle::from_view(&cam_point_v0, Some(id_0), &cam_point_v1, Some(id_1), &cam_point_v2, Some(id_2))
+        )
     }).collect::<Vec<_>>()
 }
 
@@ -51,7 +52,11 @@ pub fn filter_screen_points_for_camera_views(points: &Vec<Vector3<f32>>, intrins
         let (points_screen_with_idx, points_cam) = project_points(points, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned(),screen_width, screen_height);
         match filter_type {
             filter::FilterType::Depth => filter::filter_visible_screen_points_by_depth(&points_screen_with_idx,&points_cam),
-            filter::FilterType::TriangleIntersection => filter::filter_visible_screen_points_by_triangle_intersection(&points_screen_with_idx,&points_cam,&intrinsic_matrix)
+            filter::FilterType::TriangleIntersection => filter::filter_visible_screen_points_by_triangle_intersection(&points_screen_with_idx,&points_cam,&intrinsic_matrix),
+            filter::FilterType::RASTERIZER => {
+                let screen_cam_triangles = group_points_to_triangles(&points_screen_with_idx,&points_cam);
+                filter::filter_visible_screen_points_by_rasterizer(&screen_cam_triangles,screen_width, screen_height)
+            }
         }
     }).collect::<Vec<_>>()
 }
