@@ -1,6 +1,6 @@
 extern crate nalgebra as na;
 
-use na::{Vector2, Vector3, Matrix3xX, Matrix3};
+use na::{Vector2, Matrix3xX};
 use std::collections::HashMap;
 use crate::triangle::Triangle;
 use crate::rasterizer;
@@ -38,13 +38,14 @@ pub fn filter_visible_screen_points_by_rasterizer(screen_cam_triangles: &Vec<(Tr
     for (tri_2d,tri_3d) in screen_cam_triangles.iter() {
         let barycentric_coordiantes_with_pixel = rasterizer::calc_all_pixels_within_triangle(tri_2d);
         let barycentric_coordiantes = barycentric_coordiantes_with_pixel.iter().map(|(w0,w1,w2,_)| (*w0,*w1,*w2)).collect::<Vec<_>>();
-        let pixel_depths = rasterizer::calc_z_for_all_pixels(&barycentric_coordiantes,tri_3d);
+        let pixel_depths = rasterizer::calc_inv_z_for_all_pixels(&barycentric_coordiantes,tri_3d);
         let mut triangle_association_map = HashMap::<(usize,usize),usize>::with_capacity(3);
         triangle_association_map.insert((tri_2d.get_v0().x.floor() as usize,tri_2d.get_v0().y.floor() as usize), tri_2d.get_id0().expect("Expected id for v0!"));
         triangle_association_map.insert((tri_2d.get_v1().x.floor() as usize,tri_2d.get_v1().y.floor() as usize), tri_2d.get_id1().expect("Expected id for v1!"));
         triangle_association_map.insert((tri_2d.get_v2().x.floor() as usize,tri_2d.get_v2().y.floor() as usize), tri_2d.get_id2().expect("Expected id for v2!"));
         for i in 0..pixel_depths.len() {
             let depth = pixel_depths[i];
+            assert!(depth < 0.0);
             let pixel = barycentric_coordiantes_with_pixel[i].3;
             let key = (pixel.x.floor() as usize,pixel.y.floor() as usize);
             let pixel_u = Vector2::new(key.0,key.1);
@@ -60,15 +61,17 @@ pub fn filter_visible_screen_points_by_rasterizer(screen_cam_triangles: &Vec<(Tr
                 },
                 (true,false) => {
                     let current_depth = depth_buffer.get(&key).unwrap().0;
+                    assert!(current_depth < 0.0);
                     // GLTF is defined along -Z
-                    if depth > current_depth {
+                    if depth < current_depth {
                         depth_buffer.insert(key.clone(), (depth,None));
                     }
                 },
                 (true,true) => {
                     let current_depth = depth_buffer.get(&key).unwrap().0;
+                    assert!(current_depth < 0.0);
                     // GLTF is defined along -Z
-                    if depth > current_depth {
+                    if depth < current_depth {
                         depth_buffer.insert(key.clone(), (depth,Some((*triangle_association_map.get(&key).unwrap(),pixel_u))));
                     }
                 }
