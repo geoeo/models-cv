@@ -13,11 +13,10 @@ fn edge_function(a: &Vector2<f32>, b: &Vector2<f32>, p: &Vector2<f32>) -> f32 {
     let b_a = a-b;
     let mat = Matrix2::<f32>::from_rows(&[b_p.transpose(),b_a.transpose()]);
     mat.determinant()
-    //(p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)
 }
 
 /**
- *  * Assume the triangle vertices a,b are in counter-clockwise winding order -> Fix this. GLTF can be any winding order, Seems buggy
+ *  * Assume the triangle vertices a,b are in counter-clockwise winding order -> Fix this. GLTF can be any winding order
  */
 pub fn pixel_within_triangle_and_barycentric(triangle: &Triangle<2>, p: &Vector2<f32>) -> (f32,f32,f32,bool) {
     let area = edge_function(&triangle.get_v0(),&triangle.get_v1(),&triangle.get_v2());
@@ -40,7 +39,7 @@ pub fn pixel_within_triangle_and_barycentric(triangle: &Triangle<2>, p: &Vector2
 
 /**
  * Returns all tuples (w0, w1, w2, p) consisting of the baryentric coordiantes (w0, w1, w2) of a pixel (p),
- * for all pixels inside the  given triangle. -> TODO: Is buggy -> fix
+ * for all pixels inside the  given triangle.
  */
 pub fn calc_all_pixels_within_triangle(triangle: &Triangle<2>) -> Vec<(f32,f32,f32,Vector2<f32>)> {
     let (min, max) = triangle.calculate_boudning_box();
