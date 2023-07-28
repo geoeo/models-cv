@@ -56,7 +56,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
             &view_matrices,
             screen_width,
             screen_height,
-            models_cv::filter::FilterType::Depth
+            models_cv::filter::FilterType::Rasterizer
         );
     
     let camera_features = models_cv::generate_matches(&view_matrices,&intrinsic_matrices, &visible_screen_points_with_idx);

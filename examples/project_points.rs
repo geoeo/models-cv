@@ -9,9 +9,15 @@ use na::{Vector3,Isometry3,Point3, Matrix3};
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
-        let (document, buffers) = models_cv::gltf::load(&path);
-        let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
-        project_points(&points.into_iter().flatten().collect::<Vec<_>>());
+        if path.ends_with(".gltf") {
+            let (document, buffers) = models_cv::gltf::load(&path);
+            let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
+            project_points(&points[0]);
+        } else if path.ends_with(".obj") {
+            let model = models_cv::obj::load(&path);
+            let points = models_cv::obj::load_vertex_positions(&model);
+            project_points(&points[0]);
+        }
     } else {
         println!("usage: gltf-display <FILE>");
     }
@@ -29,9 +35,9 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,5.0),Point3::new(0.0,0.0,-5.0)];
+    let eyes = vec![Point3::new(0.0,0.0,15.0),Point3::new(-2.0,0.0,15.0),Point3::new(0.0,0.0,-15.0)];
     //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(-3.0,0.0,4.0)];
-    let eyes = vec![Point3::new(0.5,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-0.5,0.0,5.0)];
+    //let eyes = vec![Point3::new(0.5,0.0,7.0),Point3::new(0.0,0.0,7.0),Point3::new(-0.5,0.0,7.0)];
     
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let view_matrices = eyes.iter().map(|eye| {
@@ -54,7 +60,7 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
             &view_matrices,
             screen_width,
             screen_height,
-            models_cv::filter::FilterType::Depth
+            models_cv::filter::FilterType::Rasterizer
         );
     for (camera_id, visible_points_for_cam) in visible_screen_points_with_idx.iter().enumerate() {
         let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();

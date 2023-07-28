@@ -19,7 +19,9 @@ pub fn deserialize_feature_matches(path_str: &str) -> Vec<CameraFeatures> {
 pub fn calculate_rgb_byte_vec(screen_points: &Vec<Vector2<usize>>, screen_width: usize, screen_height: usize) -> Vec<u8> {
     let mut dat_vec: Vec<u8> = vec![0;3*screen_width*screen_height];
 
-    for screen_point in screen_points {
+    let screen_points_in_range = screen_points.iter().filter(|p| p.x < screen_width && p.y < screen_height);
+
+    for screen_point in screen_points_in_range {
         let x = screen_point.x;
         let y = screen_point.y;
         let screen_idx = y*screen_width + x;

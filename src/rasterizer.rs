@@ -3,11 +3,10 @@ extern crate nalgebra as na;
 use na::{Vector2, Matrix2};
 use crate::triangle::Triangle;
 
-//TODO: https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage.html
+//https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage.html
 
 /**
  * Computes the area of the parallelogram spanned by the intrinsic triangle using the determinant
- * Assume the triangle vertices a,b are in counter-clockwise winding order
  */
 fn edge_function(a: &Vector2<f32>, b: &Vector2<f32>, p: &Vector2<f32>) -> f32 {
     let b_p = p-b;
@@ -16,23 +15,27 @@ fn edge_function(a: &Vector2<f32>, b: &Vector2<f32>, p: &Vector2<f32>) -> f32 {
     mat.determinant()
 }
 
-//TODO: test this
+/**
+ *  * Assume the triangle vertices a,b are in counter-clockwise winding order -> Fix this. GLTF can be any winding order
+ */
 pub fn pixel_within_triangle_and_barycentric(triangle: &Triangle<2>, p: &Vector2<f32>) -> (f32,f32,f32,bool) {
-    let area = edge_function(&triangle.get_v0(),&triangle.get_v1(),&triangle.get_v2());
-    assert!(area > 0.0);
+    let f = 1.0; // 1.0 for CCW
+    let area = edge_function(&triangle.get_v0(),&triangle.get_v1(),&triangle.get_v2())*f;
 
-    let w2 = edge_function(&triangle.get_v0(),&triangle.get_v1(),p)/area;
-    let w0 = edge_function(&triangle.get_v1(),&triangle.get_v2(),p)/area;
-    let w1 = edge_function(&triangle.get_v2(),&triangle.get_v0(),p)/area;
+    let w2 = edge_function(&triangle.get_v0(),&triangle.get_v1(),p);
+    let w0 = edge_function(&triangle.get_v1(),&triangle.get_v2(),p);
+    let w1 = edge_function(&triangle.get_v2(),&triangle.get_v0(),p);
 
     let inside = w2 >= 0.0 && w0 >= 0.0 && w1 >= 0.0;
+    //let inside = w2 <= 0.0 && w0 <= 0.0 && w1 <= 0.0;
+    //let inside = true;
 
-    (w0,w1,w2,inside)
+    (w0/area,w1/area,w2/area,inside)
 }
 
 /**
  * Returns all tuples (w0, w1, w2, p) consisting of the baryentric coordiantes (w0, w1, w2) of a pixel (p),
- * for all pixels inside the  given triangle.
+ * for all pixels inside the  given triangle. -> TODO: Is buggy -> fix
  */
 pub fn calc_all_pixels_within_triangle(triangle: &Triangle<2>) -> Vec<(f32,f32,f32,Vector2<f32>)> {
     let (min, max) = triangle.calculate_boudning_box();
@@ -52,7 +55,7 @@ pub fn calc_all_pixels_within_triangle(triangle: &Triangle<2>) -> Vec<(f32,f32,f
         })
     }).flatten()
     .map(|p| (pixel_within_triangle_and_barycentric(&triangle,&p),p))
-    .filter(|&((_,_,_,inside),_)| inside)
+    //.filter(|&((_,_,_,inside),_)| inside)
     .map(|((w0,w1,w2,_),p)| (w0,w1,w2,p)).collect()
 }
 

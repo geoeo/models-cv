@@ -14,10 +14,16 @@ pub struct Triangle<const D: usize> {
 
 impl<const D: usize> Triangle<D> {
     pub fn from_vec(v0: &SVector::<f32,D>, id0: Option<usize>, v1: &SVector::<f32,D>, id1: Option<usize>, v2: &SVector::<f32,D>, id2: Option<usize>) -> Triangle<D> {
+        assert_ne!(v0,v1);
+        assert_ne!(v0,v2);
+        assert_ne!(v1,v2);
         Triangle::<D> {v0: v0.clone(), v1: v1.clone(), v2: v2.clone(), id0, id1, id2}
     }
 
     pub fn from_view(v0: &SVectorView::<f32,D>, id0: Option<usize>, v1: &SVectorView::<f32,D>, id1: Option<usize>, v2: &SVectorView::<f32,D>, id2: Option<usize>) -> Triangle<D> {
+        assert_ne!(v0,v1);
+        assert_ne!(v0,v2);
+        assert_ne!(v1,v2);
         Triangle::<D> {v0: v0.into_owned(), v1: v1.into_owned(), v2: v2.into_owned(), id0, id1, id2}
     }
 
