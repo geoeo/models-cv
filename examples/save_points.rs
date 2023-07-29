@@ -5,19 +5,19 @@ use na::{Vector3,Isometry3,Point3, Matrix3};
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
-        let (points,names) = load_data(&path);
-        let name = names.first().expect("No name for mesh");
-        project_points(&points.into_iter().flatten().collect::<Vec<_>>(), name);
-    } else {
-        println!("usage: gltf-display <FILE>");
+        if path.ends_with(".gltf") {
+            let (document, buffers) = models_cv::gltf::load(&path);
+            let names = models_cv::gltf::load_mesh_names(&document);
+            let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
+            project_points(&points[0],&names[0]);
+        } else if path.ends_with(".obj") {
+            let splits = path.split(|c| c == '/' || c == '.').collect::<Vec<_>>();
+            let name = splits[splits.len()-2].to_string();
+            let model = models_cv::obj::load(&path);
+            let points = models_cv::obj::load_vertex_positions(&model);
+            project_points(&points[0],&name);
+        }
     }
-}
-
-fn load_data(path: &str) -> (Vec<Vec<Vector3<f32>>>, Vec<String>) {
-    let (document, buffers) = models_cv::gltf::load(&path);
-    let points = models_cv::gltf::load_vertex_positions(&document,&buffers);
-    let names = models_cv::gltf::load_mesh_names(document);
-    (points, names)
 }
 
 fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {

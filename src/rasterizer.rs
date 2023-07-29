@@ -63,7 +63,6 @@ pub fn calc_all_pixels_within_triangle(triangle: &Triangle<2>) -> Vec<(f32,f32,f
     .map(|((w0,w1,w2,_),p)| (w0,w1,w2,p)).collect()
 }
 
-//TODO: test this
 /**
  * Calcualte the inv depth for all pixels inside a triangle using perspective correct interpolation
  */

@@ -62,6 +62,6 @@ pub fn load_vertex_positions(document: &gltf::Document, buffers: &Vec<gltf::buff
     convert_byte_data_to_vec3(positions_byte_data)
 }
 
-pub fn load_mesh_names(document: gltf::Document) -> Vec<String> {
+pub fn load_mesh_names(document: &gltf::Document) -> Vec<String> {
     document.meshes().into_iter().map(|m| m.name().expect("no name for mesh").to_string()).collect::<Vec<String>>()
 }
