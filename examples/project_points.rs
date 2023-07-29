@@ -37,7 +37,7 @@ fn project_points(points: &Vec<Vector3<f32>>) -> () {
     
     //let eyes = vec![Point3::new(0.0,0.0,15.0),Point3::new(-2.0,0.0,15.0),Point3::new(0.0,0.0,-15.0)];
     //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(-3.0,0.0,4.0)];
-    let eyes = vec![Point3::new(0.5,0.0,7.0),Point3::new(0.0,0.0,7.0),Point3::new(-0.5,0.0,-7.0)];
+    let eyes = vec![Point3::new(2.5,0.0,7.0),Point3::new(0.0,0.0,7.0),Point3::new(-0.5,0.0,-7.0)];
     
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let view_matrices = eyes.iter().map(|eye| {

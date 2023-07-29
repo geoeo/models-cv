@@ -54,7 +54,7 @@ fn render_mesh(points: &Vec<Vec<Vector3<f32>>>) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    let eye = Point3::new(0.0,0.0,5.0);
+    let eye = Point3::new(2.0,0.0,5.0);
     let at = Point3::new(scene_center.x,scene_center.y,scene_center.z);
     let mut arc_ball = ArcBall::new(eye, at);
     arc_ball.set_dist_step(1.0);
