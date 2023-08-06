@@ -10,7 +10,7 @@ pub mod triangle;
 
 use std::iter::zip;
 use std::collections::HashMap;
-use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX};
+use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX, Point3};
 use triangle::Triangle;
 
 /**
@@ -65,6 +65,25 @@ pub fn generate_matches(view_matrices: &Vec<Matrix3x4<f32>>, intrinsic_matrices:
     zip(zip(view_matrices,intrinsic_matrices),features).enumerate().map(|(cam_id,((view_matrix,intrinsic_matrix),screen_points_with_id))| {
         let point_map = screen_points_with_id.into_iter().map(|&(k,v)| (k,v)).collect::<HashMap<usize,Vector2<usize>>>();
         camera_features::CameraFeatures::new(point_map,cam_id,view_matrix.clone(),intrinsic_matrix.clone()) 
+    }).collect()
+}
+
+pub fn generate_camera_trajectory(start: &Point3<f32>, target: &Point3<f32>, arc_angle: f32, step_count: usize) -> Vec<Point3<f32>> {
+    assert!(arc_angle > 0.0 && arc_angle <= 360.0);
+    let pos = start-target;
+    let r = pos.iter().map(|v| v.powi(2)).sum::<f32>().sqrt();
+    let theta = (pos.y/r).acos();
+    let phi = pos.z.atan2(pos.x);
+    let arc_angle_rad = arc_angle * std::f32::consts::PI/180.0;
+
+    (0..step_count+1).map(|s|{
+        let ratio = (s as f32) / (step_count as f32);
+        let rad_offset = ratio*arc_angle_rad;
+        let p = phi + rad_offset;
+        let x_new = target.x + r*theta.sin()*p.cos();
+        let y_new = target.y;
+        let z_new = target.x + r*theta.sin()*p.sin();
+        Point3::<f32>::new(x_new,y_new,z_new)
     }).collect()
 }
 

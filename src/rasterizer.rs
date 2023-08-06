@@ -31,9 +31,6 @@ pub fn pixel_within_triangle_and_barycentric(triangle: &Triangle<2>, p: &Vector2
 
     let inside = w2 >= 0.0 && w0 >= 0.0 && w1 >= 0.0;
 
-    let eps = w0+w1+w2 -1.0;
-    //assert!(eps <= 1e-3);
-
     (w0,w1,w2,inside)
 }
 
