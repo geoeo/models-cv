@@ -23,7 +23,7 @@ fn main() {
 fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
     let scene_capacity: usize = points.len();
 
-    let mut scene_center = Vector3::<f32>::new(0.0, 0.0, 0.0);
+    let mut scene_center = Point3::<f32>::new(0.0, 0.0, 0.0);
 
     for point in points {
         scene_center += point;
@@ -33,10 +33,12 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
     
     //let eyes = vec![Point3::new(0.0,0.0,5.0),Point3::new(-2.0,0.0,4.5),Point3::new(0.0,0.0,-5.0)];
     //let eyes = vec![Point3::new(1.0,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-1.0,0.0,5.0)];
-    let eyes = vec![Point3::new(0.3,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-0.3,0.0,5.0)];
+    //let eyes = vec![Point3::new(0.3,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-0.3,0.0,5.0)];
+
+    let camera_trajectories = models_cv::generate_camera_trajectory(&Point3::new(-0.3,0.0,6.0), &scene_center, 360.0, 10);
+    let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z);camera_trajectories.len()];
     
-    let look_ats = vec![Point3::new(scene_center.x+0.3,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x-0.3,scene_center.y,scene_center.z)];
-    let view_matrices = eyes.iter().zip(look_ats).map(|(eye,at)| {
+    let view_matrices = camera_trajectories.iter().zip(look_ats).map(|(eye,at)| {
         let view_matrix = Isometry3::look_at_rh(&eye, &at, &Vector3::y_axis()).to_matrix();
         view_matrix.fixed_view::<3,4>(0, 0).into_owned()
     }).collect::<Vec<_>>();
