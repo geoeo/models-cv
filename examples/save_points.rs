@@ -1,7 +1,13 @@
 extern crate nalgebra as na;
 
+use std::path::Path;
+use std::fs::File;
+use std::io::BufWriter;
+use std::result::Result;
+use png::EncodingError;
 use models_cv::io::{serialize_feature_matches,deserialize_feature_matches};
 use na::{Vector3,Isometry3,Point3, Matrix3};
+
 
 fn main() {
     if let Some(path) = std::env::args().nth(1) {
@@ -31,8 +37,17 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
 
     scene_center *= 1.0/scene_capacity as f32;
     
-    let look_ats = vec![Point3::new(scene_center.x+0.3,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x-0.3,scene_center.y,scene_center.z)];
-    let camera_trajectories = vec![Point3::new(0.3,0.0,5.0),Point3::new(0.0,0.0,5.0),Point3::new(-0.3,0.0,5.0)];
+    // X Translation
+    // let look_ats = vec![Point3::new(scene_center.x+0.3,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x-0.4,scene_center.y,scene_center.z)];
+    // let camera_trajectories = vec![Point3::new(0.3,0.0,6.2),Point3::new(0.0,0.0,6.2),Point3::new(-0.4,0.0,6.2)];
+
+    // Y Translation
+    // let look_ats = vec![Point3::new(scene_center.x,scene_center.y+0.2,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y-0.3,scene_center.z)];
+    // let camera_trajectories = vec![Point3::new(0.0,0.2,6.2),Point3::new(0.0,0.0,6.2),Point3::new(0.0,-0.3,6.2)];
+
+    // Z Translation
+    let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z+0.3),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z-0.4)];
+    let camera_trajectories = vec![Point3::new(0.0,0.0,6.2+0.3),Point3::new(0.0,0.0,6.2),Point3::new(0.0,0.0,6.2-0.4)];
 
     //let camera_trajectories = models_cv::generate_camera_trajectory(&Point3::new(-0.3,0.0,6.0), &scene_center, 10.0, 2);
     //let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z);camera_trajectories.len()];
@@ -67,5 +82,39 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
     let loaded_data = deserialize_feature_matches(&path);
     assert_eq!(camera_features,loaded_data);
 
+    for (camera_id, visible_points_for_cam) in visible_screen_points_with_idx.iter().enumerate() {
+        let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();
+        let data_vec = models_cv::io::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
+        let name = format!("/home/marc/Workspace/Rust/models-cv/output/camera_features_{}_{}.png",mesh_name,camera_id+1);
+        write_png_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
+        write_test_png();
+    }
 
+
+}
+
+fn write_png_data_to_file(path_str: &str, data_vec: &Vec<u8>, screen_width: u32, screen_height: u32) -> Result<(),EncodingError> {
+    let path = Path::new(path_str);
+    let file = File::create(path).unwrap();
+    let ref mut w = BufWriter::new(file);
+
+    let mut encoder = png::Encoder::new(w, screen_width, screen_height); 
+    encoder.set_color(png::ColorType::Rgb);
+    encoder.set_depth(png::BitDepth::Eight);
+    encoder.set_source_gamma(png::ScaledFloat::new(1.0 / 2.2));     // 1.0 / 2.2, unscaled, but rounded
+    let source_chromaticities = png::SourceChromaticities::new(     // Using unscaled instantiation here
+        (0.31270, 0.32900),
+        (0.64000, 0.33000),
+        (0.30000, 0.60000),
+        (0.15000, 0.06000)
+    );
+    encoder.set_source_chromaticities(source_chromaticities);
+    let mut writer = encoder.write_header().unwrap();
+
+    writer.write_image_data(&data_vec[..]) // Save
+}
+
+fn write_test_png() -> () {
+    let data_vec = vec![255, 0, 0, 0, 0, 0, 0, 255 ,0, 0,0,255]; // An array containing a RGB sequence. First pixel is red and second pixel is black.
+    write_png_data_to_file("/home/marc/Workspace/Rust/models-cv/output/test.png",&data_vec,2,2).unwrap();
 }

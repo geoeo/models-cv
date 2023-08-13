@@ -80,42 +80,6 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'project_points Suzanne'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=project_points",
-                    "--package=models-cv"
-                ],
-                "filter": {
-                    "name": "project_points",
-                    "kind": "example"
-                }
-            },
-            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Suzanne/glTF/Suzanne.gltf"],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'project_points Cube'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=project_points",
-                    "--package=models-cv"
-                ],
-                "filter": {
-                    "name": "project_points",
-                    "kind": "example"
-                }
-            },
-            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Cube/glTF/Cube.gltf"],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
             "name": "Debug unit tests in example 'load_gltf'",
             "cargo": {
                 "args": [
@@ -154,7 +118,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'Save Points'",
+            "name": "Debug example 'Save Points Suzanne'",
             "cargo": {
                 "args": [
                     "build",
@@ -208,25 +172,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'Project points Mesh Obj'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=project_points",
-                    "--package=models-cv"
-                ],
-                "filter": {
-                    "name": "project_points",
-                    "kind": "example"
-                }
-            },
-            "args": ["/mnt/d/Workspace/Assets/meshes/objects/sphere/sphere.obj"],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug example 'Save points Obj'",
+            "name": "Debug example 'Save points Sphere'",
             "cargo": {
                 "args": [
                     "build",
