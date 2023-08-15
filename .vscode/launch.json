@@ -186,6 +186,24 @@
             },
             "args": ["/mnt/d/Workspace/Assets/meshes/objects/sphere/sphere.obj"],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'Save points Cube'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=save_points",
+                    "--package=models-cv"
+                ],
+                "filter": {
+                    "name": "save_points",
+                    "kind": "example"
+                }
+            },
+            "args": ["/mnt/d/Workspace/Assets/glTF-Sample-Models/2.0/Cube/glTF/Cube.gltf"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

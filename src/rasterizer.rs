@@ -3,6 +3,8 @@ extern crate nalgebra as na;
 use na::{Vector2, Matrix2};
 use crate::triangle::Triangle;
 
+const EPS: f32 = 5e-3;
+
 //https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage.html
 
 /**
@@ -29,7 +31,7 @@ pub fn pixel_within_triangle_and_barycentric(triangle: &Triangle<2>, p: &Vector2
     let w0 = edge_function(&triangle.get_v1(),&triangle.get_v2(),p)*f/area;
     let w1 = edge_function(&triangle.get_v2(),&triangle.get_v0(),p)*f/area;
 
-    let inside = w2 >= 0.0 && w0 >= 0.0 && w1 >= 0.0;
+    let inside = w2 >= -EPS && w0 >= -EPS && w1 >= -EPS;
 
     (w0,w1,w2,inside)
 }
