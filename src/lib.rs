@@ -10,6 +10,8 @@ pub mod triangle;
 
 use std::iter::zip;
 use std::collections::HashMap;
+use ordered_float::OrderedFloat;
+
 use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX, Point3};
 use triangle::Triangle;
 
@@ -18,12 +20,25 @@ use triangle::Triangle;
  */
 pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>) -> (Vec<(usize,Vector2<f32>)>, Matrix3xX<f32>) {
     let mut ps = Matrix4xX::<f32>::from_element(points.len(), 1.0);
+    let mut vec_id_map = HashMap::<(OrderedFloat<f32>,OrderedFloat<f32>,OrderedFloat<f32>),usize>::with_capacity(points.len());
+
     for i in 0..points.len() {
-        ps.fixed_view_mut::<3,1>(0,i).copy_from(&points[i]);
+        let p = &points[i];
+        let key = (OrderedFloat(p.x),OrderedFloat(p.y),OrderedFloat(p.z));
+        if !vec_id_map.contains_key(&key) {
+            vec_id_map.insert(key, i);
+        }   
+        ps.fixed_view_mut::<3,1>(0,i).copy_from(p);
     }
-    let points_cam = view_matrix*ps;
+    let points_cam = view_matrix*(&ps);
     let projected_points = intrinsic_matrix*&points_cam;
+
     let screen_points_with_idx = projected_points.column_iter().enumerate()
+        .map(|(i,c)|{
+            let orig_p = ps.column(i);
+            let key = (OrderedFloat(orig_p.x),OrderedFloat(orig_p.y),OrderedFloat(orig_p.z));
+            (*vec_id_map.get(&key).expect("point not present in key map"),c)
+        } )
         .filter(|(_,c)| c.z != 0.0)
         .map(|(i,c)| (i,(c.x/c.z,c.y/c.z)))
         .map(|(i,(x,y))| (i,Vector2::new(x, y)))

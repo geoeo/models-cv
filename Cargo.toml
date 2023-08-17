@@ -11,6 +11,7 @@ obj = "0.10.2"
 nalgebra = "*"
 serde = { version = "*", features = ["derive"] }
 serde_yaml = "*"
+ordered-float = "3.7.0"
 
 [dev-dependencies]
 kiss3d = "*"
