@@ -64,7 +64,6 @@ pub fn filter_visible_screen_points_by_rasterizer(screen_cam_triangles: &Vec<(Tr
                     assert!(current_depth < 0.0);
                     // GLTF is defined along -Z
                     if depth > current_depth {
-                        //TODO: check if difference of all 3d vertices are >= eps value
                         depth_buffer.insert(key.clone(), (depth,None));
                     }
                 },
@@ -73,7 +72,6 @@ pub fn filter_visible_screen_points_by_rasterizer(screen_cam_triangles: &Vec<(Tr
                     assert!(current_depth < 0.0);
                     // GLTF is defined along -Z
                     if depth > current_depth {
-                        //TODO: check if difference of all 3d vertices are >= eps value
                         depth_buffer.insert(key.clone(), (depth,Some((*triangle_association_map.get(&key).unwrap(),pixel_u))));
                     }
                 }
