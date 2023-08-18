@@ -9,6 +9,7 @@ repository = "https://github.com/geoeo/models-cv"
 readme = "README.md"
 categories = [ "computer-vision"]
 keywords = [ "sfm", "computer-vision" ]
+license = "BSD-3-Clause"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
