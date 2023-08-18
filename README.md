@@ -8,6 +8,11 @@ Currently the views/feautres are defined in the Computer Graphics coordinate sys
 
 For a Computer Vision coordiante system roate poses around +X with a value of PI. For features invert the y component.
 
+### Assets
+GLTF: https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0 (Suzanne)
+
+OBJ: https://github.com/odedstein/meshes (Sphere)
+
 ### Sphere
 ![sphere](doc/camera_features_sphere_1.png)
 ![sphere](doc/camera_features_sphere_2.png)
@@ -22,5 +27,4 @@ For a Computer Vision coordiante system roate poses around +X with a value of PI
 ![suzanne](doc/camera_features_Suzanne_5.png)
 ![suzanne](doc/camera_features_Suzanne_6.png)
 ![suzanne](doc/camera_features_Suzanne_7.png)
-
 
