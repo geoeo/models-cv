@@ -43,14 +43,14 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
 
     // Y Translation
     // let look_ats = vec![Point3::new(scene_center.x,scene_center.y+0.2,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y-0.3,scene_center.z)];
-    // let camera_trajectories = vec![Point3::new(0.0,0.2,6.2),Point3::new(0.0,0.0,6.2),Point3::new(0.0,-0.3,6.2)];
+    // let camera_trajectories = vec![Point3::new(0.0,0.2,7.2),Point3::new(0.0,0.0,7.2),Point3::new(0.0,-0.3,7.2)];
 
     // Z Translation
-    let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z+0.3),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z-0.4)];
-    let camera_trajectories = vec![Point3::new(0.0,0.0,6.2+0.3),Point3::new(0.0,0.0,6.2),Point3::new(0.0,0.0,6.2-0.4)];
+    // let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z+0.3),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z-0.4)];
+    // let camera_trajectories = vec![Point3::new(0.0,0.0,6.2+0.4),Point3::new(0.0,0.0,6.2),Point3::new(0.0,0.0,6.2-0.6)];
 
-    //let camera_trajectories = models_cv::generate_camera_trajectory(&Point3::new(-0.3,0.0,6.0), &scene_center, 10.0, 2);
-    //let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z);camera_trajectories.len()];
+    let camera_trajectories = models_cv::generate_camera_trajectory(&Point3::new(-0.3,0.0,7.2), &scene_center, 60.0, 10);
+    let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z);camera_trajectories.len()];
     
     let view_matrices = camera_trajectories.iter().zip(look_ats).map(|(eye,at)| {
         let view_matrix = Isometry3::look_at_rh(&eye, &at, &Vector3::y_axis()).to_matrix();
@@ -87,7 +87,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
         let data_vec = models_cv::io::calculate_rgb_byte_vec(&visible_screen_points, screen_width as usize, screen_height as usize);
         let name = format!("/home/marc/Workspace/Rust/models-cv/output/camera_features_{}_{}.png",mesh_name,camera_id+1);
         write_png_data_to_file(name.as_str(), &data_vec,screen_width as u32, screen_height as u32).expect("Writing png failed!");
-        write_test_png();
+        //write_test_png();
     }
 
 
