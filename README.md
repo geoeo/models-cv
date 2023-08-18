@@ -4,7 +4,7 @@ Crate for loading gltf/obj files and projecting the verticies using camera model
 See save_points examples on how the camera/trajectories are defined.
 
 ### Coordiante System
-Currently the views/feautres are defined in the Computer Graphics Coordinate System of +X Right, +Y Up, +Z Back
+Currently the views/feautres are defined in the Computer Graphics coordinate system of +X Right, +Y Up, +Z Back
 
 For a Computer Vision coordiante system roate poses around +X with a value of PI. For features invert the y component.
 
