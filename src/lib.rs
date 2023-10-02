@@ -11,18 +11,24 @@ pub mod triangle;
 
 use std::iter::zip;
 use std::collections::HashMap;
-
 use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX, Point3};
 use triangle::Triangle;
+use ordered_float::OrderedFloat;
 
 /**
  * Returns A vector of indexed points in image space where the index represents the column of the corresponding 3D point matrix in camera space
  */
 pub fn project_points(indexed_landmarks: &Vec<landmark::Landmark>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>) -> (Vec<(usize,Vector2<f32>)>, Matrix3xX<f32>) {
     let mut ps = Matrix4xX::<f32>::from_element(indexed_landmarks.len(), 1.0);
+    let mut vec_id_map = HashMap::<(OrderedFloat<f32>,OrderedFloat<f32>,OrderedFloat<f32>),usize>::with_capacity(indexed_landmarks.len());
 
     for i in 0..indexed_landmarks.len() {
-        let p = &indexed_landmarks[i].get_position();
+        let l = &indexed_landmarks[i];
+        let p = l.get_position();
+        let key = (OrderedFloat(p.x),OrderedFloat(p.y),OrderedFloat(p.z));
+        if !vec_id_map.contains_key(&key) {
+            vec_id_map.insert(key,*l.get_id());
+        }   
         ps.fixed_view_mut::<3,1>(0,i).copy_from(p);
     }
     let points_cam = view_matrix*(&ps);
@@ -30,8 +36,9 @@ pub fn project_points(indexed_landmarks: &Vec<landmark::Landmark>, intrinsic_mat
 
     let screen_points_with_idx = projected_points.column_iter().enumerate()
         .map(|(i,c)|{
-            let landmark_id = *indexed_landmarks[i].get_id();
-            (landmark_id,c)
+            let orig_p = ps.column(i);
+            let key = (OrderedFloat(orig_p.x),OrderedFloat(orig_p.y),OrderedFloat(orig_p.z));
+            (*vec_id_map.get(&key).expect("point not present in key map"),c)
         } )
         .filter(|(_,c)| c.z != 0.0)
         .map(|(i,c)| (i,(c.x/c.z,c.y/c.z)))
