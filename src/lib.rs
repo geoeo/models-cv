@@ -1,6 +1,7 @@
 extern crate nalgebra as na;
 
 pub mod camera_features;
+pub mod landmark;
 pub mod filter;
 pub mod io;
 pub mod gltf;
@@ -10,7 +11,6 @@ pub mod triangle;
 
 use std::iter::zip;
 use std::collections::HashMap;
-use ordered_float::OrderedFloat;
 
 use na::{Vector2,Vector3,Matrix3,Matrix4xX,Matrix3x4, Matrix3xX, Point3};
 use triangle::Triangle;
@@ -18,16 +18,11 @@ use triangle::Triangle;
 /**
  * Returns A vector of indexed points in image space where the index represents the column of the corresponding 3D point matrix in camera space
  */
-pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>) -> (Vec<(usize,Vector2<f32>)>, Matrix3xX<f32>) {
-    let mut ps = Matrix4xX::<f32>::from_element(points.len(), 1.0);
-    let mut vec_id_map = HashMap::<(OrderedFloat<f32>,OrderedFloat<f32>,OrderedFloat<f32>),usize>::with_capacity(points.len());
+pub fn project_points(indexed_landmarks: &Vec<landmark::Landmark>, intrinsic_matrix: &Matrix3<f32>, view_matrix: &Matrix3x4<f32>) -> (Vec<(usize,Vector2<f32>)>, Matrix3xX<f32>) {
+    let mut ps = Matrix4xX::<f32>::from_element(indexed_landmarks.len(), 1.0);
 
-    for i in 0..points.len() {
-        let p = &points[i];
-        let key = (OrderedFloat(p.x),OrderedFloat(p.y),OrderedFloat(p.z));
-        if !vec_id_map.contains_key(&key) {
-            vec_id_map.insert(key, i);
-        }   
+    for i in 0..indexed_landmarks.len() {
+        let p = &indexed_landmarks[i].get_position();
         ps.fixed_view_mut::<3,1>(0,i).copy_from(p);
     }
     let points_cam = view_matrix*(&ps);
@@ -35,9 +30,8 @@ pub fn project_points(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32
 
     let screen_points_with_idx = projected_points.column_iter().enumerate()
         .map(|(i,c)|{
-            let orig_p = ps.column(i);
-            let key = (OrderedFloat(orig_p.x),OrderedFloat(orig_p.y),OrderedFloat(orig_p.z));
-            (*vec_id_map.get(&key).expect("point not present in key map"),c)
+            let landmark_id = *indexed_landmarks[i].get_id();
+            (landmark_id,c)
         } )
         .filter(|(_,c)| c.z != 0.0)
         .map(|(i,c)| (i,(c.x/c.z,c.y/c.z)))
@@ -61,9 +55,9 @@ pub fn group_points_to_triangles(pixels_with_id: &Vec<(usize,Vector2<f32>)>, cam
     }).collect::<Vec<_>>()
 }
 
-pub fn filter_screen_points_for_camera_views(points: &Vec<Vector3<f32>>, intrinsic_matrix: &Matrix3<f32>, view_matrices: &Vec<Matrix3x4<f32>>, screen_width: f32, screen_height: f32, filter_type: filter::FilterType) -> Vec<Vec<(usize,Vector2<usize>)>> {
+pub fn filter_screen_points_for_camera_views(indexed_landmarks: &Vec<landmark::Landmark>, intrinsic_matrix: &Matrix3<f32>, view_matrices: &Vec<Matrix3x4<f32>>, screen_width: f32, screen_height: f32, filter_type: filter::FilterType) -> Vec<Vec<(usize,Vector2<usize>)>> {
     view_matrices.iter().map(|view_matrix| {
-        let (points_screen_with_idx, points_cam) = project_points(points, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned());
+        let (points_screen_with_idx, points_cam) = project_points(indexed_landmarks, &intrinsic_matrix, &view_matrix.fixed_view::<3,4>(0, 0).into_owned());
         match filter_type {
             filter::FilterType::Depth => filter::filter_visible_screen_points_by_depth(&points_screen_with_idx,&points_cam),
             filter::FilterType::Rasterizer => {
@@ -80,6 +74,12 @@ pub fn generate_matches(view_matrices: &Vec<Matrix3x4<f32>>, intrinsic_matrices:
     zip(zip(view_matrices,intrinsic_matrices),features).enumerate().map(|(cam_id,((view_matrix,intrinsic_matrix),screen_points_with_id))| {
         let point_map = screen_points_with_id.into_iter().map(|&(k,v)| (k,v)).collect::<HashMap<usize,Vector2<usize>>>();
         camera_features::CameraFeatures::new(point_map,cam_id,view_matrix.clone(),intrinsic_matrix.clone()) 
+    }).collect()
+}
+
+pub fn generate_landmarks(indexed_points: &Vec<(usize,Vector3<f32>)>) -> Vec<landmark::Landmark> {
+    indexed_points.iter().map(|(i,p)| {
+        landmark::Landmark::new(i,p) 
     }).collect()
 }
 

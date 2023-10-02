@@ -1,6 +1,7 @@
 extern crate nalgebra as na;
 
 use crate::camera_features::CameraFeatures;
+use crate::landmark::Landmark;
 use std::fs;
 use na::Vector2;
 
@@ -14,6 +15,18 @@ pub fn deserialize_feature_matches(path_str: &str) -> Vec<CameraFeatures> {
     let serde_yaml = fs::read_to_string(path_str).expect("Unable to read file!");
     let serial_state = serde_yaml::from_str(&serde_yaml).expect("Unable to parse YAML");
     CameraFeatures::from_serial(&serial_state)
+}
+
+pub fn serialize_landmarks(path_str: &str, landmark_vec: &Vec<Landmark>) -> std::io::Result<()> {
+    let serial_state = Landmark::to_serial(landmark_vec);
+    let serde_yaml = serde_yaml::to_string(&serial_state);
+    fs::write(path_str,serde_yaml.unwrap())
+}
+
+pub fn deserialize_landmarks(path_str: &str) -> Vec<Landmark> {
+    let serde_yaml = fs::read_to_string(path_str).expect("Unable to read file!");
+    let serial_state = serde_yaml::from_str(&serde_yaml).expect("Unable to parse YAML");
+    Landmark::from_serial(&serial_state)
 }
 
 pub fn calculate_rgb_byte_vec(screen_points: &Vec<Vector2<usize>>, screen_width: usize, screen_height: usize) -> Vec<u8> {

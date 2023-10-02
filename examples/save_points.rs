@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::result::Result;
 use png::EncodingError;
-use models_cv::io::{serialize_feature_matches,deserialize_feature_matches};
+use models_cv::io::{serialize_feature_matches,serialize_landmarks,deserialize_feature_matches,deserialize_landmarks};
 use na::{Vector3,Isometry3,Point3, Matrix3};
 
 
@@ -46,7 +46,7 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
     // let camera_trajectories = vec![Point3::new(0.0,0.2,7.2),Point3::new(0.0,0.0,7.2),Point3::new(0.0,-0.3,7.2)];
 
     // Z Translation
-    // let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z+0.3),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z-0.4)];
+    // let look_ats = vec![Point3::new(scene_center.x,scene_center.y,scene_center.z+0.4),Point3::new(scene_center.x,scene_center.y,scene_center.z),Point3::new(scene_center.x,scene_center.y,scene_center.z-0.6)];
     // let camera_trajectories = vec![Point3::new(0.0,0.0,6.2+0.4),Point3::new(0.0,0.0,6.2),Point3::new(0.0,0.0,6.2-0.6)];
 
     let camera_trajectories = models_cv::generate_camera_trajectory(&Point3::new(-0.3,0.0,7.2), &scene_center, 60.0, 10);
@@ -66,21 +66,29 @@ fn project_points(points: &Vec<Vector3<f32>>, mesh_name: &String) -> () {
         0.0,f,cy,
         0.0,0.0,1.0);
     let intrinsic_matrices = vec![intrinsic_matrix;view_matrices.len()];
-    
+    let indexed_landmarks = models_cv::generate_landmarks(&points.iter().enumerate().map(|(i,c)| (i,*c)).collect::<Vec<_>>());
+
     let visible_screen_points_with_idx 
         = models_cv::filter_screen_points_for_camera_views(
-            points,&intrinsic_matrix,
+            &indexed_landmarks,
+            &intrinsic_matrix,
             &view_matrices,
             screen_width,
             screen_height,
             models_cv::filter::FilterType::Rasterizer
         );
-    
+
     let camera_features = models_cv::generate_matches(&view_matrices,&intrinsic_matrices, &visible_screen_points_with_idx);
-    let path = format!("/home/marc/Workspace/Rust/models-cv/output/camera_features_{}.yaml",mesh_name);
-    serialize_feature_matches(&path, &camera_features).expect("Serialzing failed");
-    let loaded_data = deserialize_feature_matches(&path);
-    assert_eq!(camera_features,loaded_data);
+
+
+    let cam_features_path = format!("/home/marc/Workspace/Rust/models-cv/output/camera_features_{}.yaml",mesh_name);
+    let landmarks_path = format!("/home/marc/Workspace/Rust/models-cv/output/landmarks_{}.yaml",mesh_name);
+    serialize_feature_matches(&cam_features_path, &camera_features).expect("Serialzing failed");
+    serialize_landmarks(&landmarks_path, &indexed_landmarks).expect("Serialzing failed");
+    let loaded_data_features = deserialize_feature_matches(&cam_features_path);
+    let loaded_data_landmarks = deserialize_landmarks(&landmarks_path);
+    assert_eq!(camera_features,loaded_data_features);
+    assert_eq!(indexed_landmarks,loaded_data_landmarks);
 
     for (camera_id, visible_points_for_cam) in visible_screen_points_with_idx.iter().enumerate() {
         let visible_screen_points = visible_points_for_cam.iter().map(|&(_,v)| v).collect::<Vec<_>>();
